@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refund &amp; Returns Policy — ROHILLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <article class="legal-page">
+    <a href="../index.html" class="back-link">← Back to ROHILLA</a>
+
+    <h1>Refund &amp; Returns Policy</h1>
+    <p class="legal-updated">Last updated: <span data-today></span></p>
+
+    <p>Because we sell consumable food products, our return policy is shaped by food-safety law. Once a sealed pouch leaves our warehouse, we cannot resell it. So returns are limited to the situations below — but in every one of these, we will make it right.</p>
+
+    <h2>When you CAN return / get a refund</h2>
+    <ol>
+      <li><strong>Damaged in transit:</strong> Pouch is torn, leaking, or the outer box is visibly damaged on arrival. Report within <strong>24 hours of delivery</strong> with photos.</li>
+      <li><strong>Wrong product shipped:</strong> You ordered Kebab Masala and received Tandoori Masala. Report within <strong>48 hours of delivery</strong>.</li>
+      <li><strong>Quality complaint:</strong> Foreign matter, off odour, infestation, or significantly off-flavour. Report within <strong>7 days of delivery</strong>. We may ask you to send the unused product back at our cost for inspection.</li>
+      <li><strong>Missing items:</strong> Your order is short by one or more pouches. Report within <strong>48 hours</strong>.</li>
+      <li><strong>Order cancelled before dispatch:</strong> Full refund within 5 working days.</li>
+    </ol>
+
+    <h2>When we CANNOT accept returns</h2>
+    <ul>
+      <li>Opened pouches (food-safety law)</li>
+      <li>"Don't like the taste" — taste is subjective and our pouches list every ingredient. Please read carefully before ordering. As a goodwill gesture, first-time customers may request a partial refund on one product per order within 7 days; this is at our sole discretion.</li>
+      <li>Reports made after the timeframes listed above</li>
+    </ul>
+
+    <h2>How to raise a return / refund request</h2>
+    <ol>
+      <li>WhatsApp <span data-phone>—</span> or email <span data-email>—</span> with your order number and a clear photo of the issue.</li>
+      <li>We respond within 24 working hours.</li>
+      <li>Approved refunds are issued to your original payment method within 5–7 working days, or as a UPI transfer for COD orders.</li>
+    </ol>
+
+    <h2>Cancellations</h2>
+    <p>You can cancel an order any time before we dispatch it (usually within 24 hours of placing) for a full refund. Once the order is dispatched, the shipping policy applies.</p>
+
+    <h2>Refund timelines</h2>
+    <ul>
+      <li><strong>UPI / Wallet:</strong> 1–3 working days</li>
+      <li><strong>Credit / Debit card:</strong> 5–7 working days (depending on issuing bank)</li>
+      <li><strong>Net banking:</strong> 3–5 working days</li>
+      <li><strong>COD:</strong> UPI transfer within 5 working days of approval</li>
+    </ul>
+
+    <div class="legal-contact">
+      <p><strong>Need help with a return?</strong></p>
+      <p>
+        WhatsApp / Phone: <span data-phone>—</span><br/>
+        Email: <span data-email>—</span><br/>
+        We respond within 1 working day.
+      </p>
+    </div>
+  </article>
+
+  <script src="../data.js"></script>
+  <script>
+    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
+    document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
+    document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
+  </script>
+</body>
+</html>

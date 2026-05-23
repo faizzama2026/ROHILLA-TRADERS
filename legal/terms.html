@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — ROHILLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <!-- STARTER terms template — have it reviewed by a lawyer before going live. -->
+  <article class="legal-page">
+    <a href="../index.html" class="back-link">← Back to ROHILLA</a>
+
+    <h1>Terms of Service</h1>
+    <p class="legal-updated">Last updated: <span data-today></span></p>
+
+    <h2>1. Acceptance</h2>
+    <p>By using this website or placing an order with us, you agree to these terms. If you do not agree, please do not use the site.</p>
+
+    <h2>2. About us</h2>
+    <p><strong>ROHILLA Traders</strong> is a proprietorship registered in India. FSSAI License: <span data-fssai>—</span>. GSTIN: <span data-gstin>—</span>. Registered address: <span data-address>—</span>.</p>
+
+    <h2>3. Products & pricing</h2>
+    <ul>
+      <li>All prices are in Indian Rupees (₹) and include 5% GST as applicable to packaged spices under HSN 0904–0910.</li>
+      <li>We try to display product photos and descriptions accurately, but slight variations in colour and packaging may occur.</li>
+      <li>We reserve the right to correct any pricing or stock errors. If your order is affected, we will contact you before processing.</li>
+    </ul>
+
+    <h2>4. Orders</h2>
+    <ul>
+      <li>Placing an order constitutes an offer to purchase; we accept it when we confirm the order on WhatsApp or email.</li>
+      <li>We may decline or cancel orders due to stock-outs, suspected fraud, or pricing errors. In such cases any amount paid will be refunded in full within 7 working days.</li>
+      <li>Minimum order value: ₹0. Maximum order: 25 pouches per order (contact us for bulk / corporate orders).</li>
+    </ul>
+
+    <h2>5. Payment</h2>
+    <ul>
+      <li>We accept WhatsApp-confirmed COD (Cash on Delivery) and online payment via Razorpay (UPI / Cards / Net Banking / Wallets) once enabled.</li>
+      <li>Razorpay handles all online payment processing; we do not store your payment credentials.</li>
+    </ul>
+
+    <h2>6. Shipping</h2>
+    <p>Shipping terms are detailed in our <a href="shipping.html">Shipping Policy</a>.</p>
+
+    <h2>7. Returns & refunds</h2>
+    <p>Return and refund terms are detailed in our <a href="refund.html">Refund Policy</a>.</p>
+
+    <h2>8. Food safety</h2>
+    <ul>
+      <li>Our products are FSSAI-licensed packaged spices. Each pouch carries a batch number, manufacturing date and best-before date.</li>
+      <li>Best-before is typically 18–24 months from manufacture if stored in a cool dry place, sealed.</li>
+      <li>If you have known allergies, please read the ingredients on each pouch carefully.</li>
+    </ul>
+
+    <h2>9. Intellectual property</h2>
+    <p>The ROHILLA name, logo, recipes, photographs and packaging design are our intellectual property. You may not reproduce them for commercial use without written permission.</p>
+
+    <h2>10. Limitation of liability</h2>
+    <p>To the extent permitted by Indian law, our liability for any order is limited to the value of that order. We are not liable for any indirect or consequential loss.</p>
+
+    <h2>11. Governing law</h2>
+    <p>These terms are governed by the laws of India. Any dispute will be subject to the exclusive jurisdiction of the courts at Bareilly, Uttar Pradesh.</p>
+
+    <h2>12. Contact</h2>
+    <div class="legal-contact">
+      <p>
+        ROHILLA Traders<br/>
+        <span data-address>—</span><br/>
+        Email: <span data-email>—</span><br/>
+        Phone: <span data-phone>—</span>
+      </p>
+    </div>
+  </article>
+
+  <script src="../data.js"></script>
+  <script>
+    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
+    document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
+    document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
+    document.querySelectorAll('[data-address]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactAddress) || '—');
+    document.querySelectorAll('[data-fssai]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.fssaiLicense) || '—');
+    document.querySelectorAll('[data-gstin]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.gstin) || '—');
+  </script>
+</body>
+</html>

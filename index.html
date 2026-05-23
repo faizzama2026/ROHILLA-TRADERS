@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROHILLA - Premium Indian Spices</title>
+
+  <!--
+    HOW THIS WEBSITE IS ORGANISED — read this once:
+      data.js     → ALL your products, recipes, gallery photos, prices.
+                    This is the file to edit when you want to change content.
+      styles.css  → How everything looks (colours, spacing, animations).
+      app.js      → How everything behaves (cart, scroll, animations, etc).
+      index.html  → This file. The page layout, broken into commented
+                    sections you can find easily.
+
+    EXTERNAL LIBRARIES (loaded from internet — no install needed):
+      • Google Fonts (Playfair Display + Inter)
+      • Lucide icons       — pretty SVG icons
+      • GSAP + ScrollTrigger — scroll-linked animations (x-ray reveal)
+      • Lenis              — buttery smooth scrolling
+      • Razorpay checkout  — loaded on demand when user clicks "Checkout"
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- =================================================================
+       SECTION 1 — NAVIGATION (top bar)
+       Links live in app.js inside the NAV_LINKS array.
+       Logo text is right here in the HTML.
+       ================================================================= -->
+  <header id="site-header" class="site-header">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo gold-gradient">ROHILLA</a>
+
+      <nav class="nav-links" id="nav-links">
+        <!-- Filled by app.js -->
+      </nav>
+
+      <div class="nav-actions">
+        <button id="cart-button" class="icon-button" aria-label="Open cart">
+          <i data-lucide="shopping-bag"></i>
+          <span id="cart-badge" class="cart-badge" hidden>0</span>
+        </button>
+
+        <button id="mobile-menu-toggle" class="icon-button mobile-only" aria-label="Toggle menu">
+          <i data-lucide="menu" id="menu-open-icon"></i>
+          <i data-lucide="x" id="menu-close-icon" hidden></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile full-screen menu (toggled by app.js) -->
+  <div id="mobile-menu" class="mobile-menu" hidden>
+    <nav id="mobile-nav-links" class="mobile-nav-links"></nav>
+  </div>
+
+
+  <main>
+
+    <!-- ===============================================================
+         SECTION 2 — HERO
+         The big top section with the headline and the 3D pouch.
+         Edit hero copy and trust-indicator numbers right here.
+         =============================================================== -->
+    <section class="hero">
+      <div class="hero-bg-radial"></div>
+      <div id="hero-spotlight" class="hero-spotlight"></div>
+
+      <div class="hero-rays">
+        <div class="hero-ray hero-ray-1"></div>
+        <div class="hero-ray hero-ray-2"></div>
+      </div>
+
+      <div class="hero-inner">
+        <div class="hero-grid">
+
+          <!-- Left: text -->
+          <div class="hero-text">
+            <div class="hero-eyebrow fade-in" style="--fade-delay:0.2s">
+              <i data-lucide="sparkles"></i>
+              <span>Premium Indian Spices</span>
+            </div>
+
+            <h1 class="hero-title fade-in" style="--fade-delay:0.4s">
+              <span class="white">The Art of</span><br />
+              <span class="gold-gradient text-shadow-gold">Perfection</span>
+            </h1>
+
+            <p class="hero-desc fade-in" style="--fade-delay:0.6s">
+              Handcrafted spice blends from the heart of India.
+              Each pouch tells a story of tradition, precision, and uncompromising quality.
+            </p>
+
+            <div class="hero-buttons fade-in" style="--fade-delay:0.8s">
+              <button class="btn btn-gold" data-scroll-to="#collection">
+                <span>Explore Collection</span>
+                <i data-lucide="arrow-right"></i>
+              </button>
+              <button class="btn btn-outline" data-scroll-to="#engineering">
+                The Engineering
+              </button>
+            </div>
+
+            <!-- Trust indicators — values come from CONFIG.trustIndicators in data.js.
+                 Edit them THERE, not here. Default values are honest defaults for
+                 a brand-new shop (FSSAI / Natural / Made in India). -->
+            <div id="hero-stats" class="hero-stats fade-in" style="--fade-delay:1.2s"></div>
+          </div>
+
+          <!-- Right: 3D pouch (tilts with mouse) -->
+          <div class="hero-pouch-wrap">
+            <div id="hero-pouch" class="hero-pouch">
+              <div class="pouch-glow"></div>
+              <div class="pouch-card">
+                <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80" alt="ROHILLA Premium Spice Pouch" />
+                <div class="pouch-overlay"></div>
+                <div class="pouch-logo gold-gradient">ROHILLA</div>
+                <div class="pouch-label">
+                  <div class="pouch-label-name">Kebab Masala</div>
+                  <div class="pouch-label-sub gold-gradient">Premium Blend</div>
+                </div>
+              </div>
+
+              <!-- Floating particles -->
+              <div class="pouch-particles">
+                <div class="particle" style="left:20%; top:30%; --d:3s;   --delay:0s"></div>
+                <div class="particle" style="left:35%; top:50%; --d:3.5s; --delay:0.3s"></div>
+                <div class="particle" style="left:50%; top:70%; --d:4s;   --delay:0.6s"></div>
+                <div class="particle" style="left:65%; top:30%; --d:4.5s; --delay:0.9s"></div>
+                <div class="particle" style="left:80%; top:50%; --d:5s;   --delay:1.2s"></div>
+                <div class="particle" style="left:95%; top:70%; --d:5.5s; --delay:1.5s"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="hero-bottom-fade"></div>
+    </section>
+
+
+    <!-- ===============================================================
+         SECTION 3 — ENGINEERING (the "X-ray reveal" section)
+         The pouch fades to a wireframe as you scroll into this section.
+         Feature cards are listed in data.js → ENGINEERING_FEATURES.
+         =============================================================== -->
+    <section id="engineering" class="engineering">
+      <div class="grid-bg"></div>
+      <div class="section-inner">
+
+        <div class="section-header reveal">
+          <span class="eyebrow">The Architecture</span>
+          <h2>Engineered for <span class="gold-gradient">Excellence</span></h2>
+          <p>Every element of our packaging is meticulously designed to preserve the integrity of our spices while delivering an unparalleled user experience.</p>
+        </div>
+
+        <div class="engineering-grid">
+          <div class="xray-stage">
+            <div id="xray-pouch" class="xray-pouch">
+              <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" alt="ROHILLA Pouch" />
+              <div class="pouch-overlay"></div>
+              <div class="pouch-logo gold-gradient">ROHILLA</div>
+            </div>
+
+            <div id="xray-wireframe" class="xray-wireframe" style="opacity:0">
+              <svg viewBox="0 0 280 420" fill="none">
+                <rect x="10" y="10" width="260" height="400" rx="12" stroke="rgba(191,149,63,0.6)" stroke-width="1" stroke-dasharray="4 4"/>
+                <rect x="20" y="20" width="240" height="380" rx="8" stroke="rgba(191,149,63,0.3)" stroke-width="0.5"/>
+                <ellipse cx="140" cy="340" rx="60" ry="15" stroke="rgba(252,246,186,0.8)" stroke-width="1" fill="rgba(252,246,186,0.1)"/>
+                <line x1="140" y1="325" x2="140" y2="280" stroke="rgba(252,246,186,0.6)" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="80"  y1="340" x2="200" y2="340" stroke="rgba(191,149,63,0.4)" stroke-width="0.5"/>
+                <line x1="80"  y1="335" x2="80"  y2="345" stroke="rgba(191,149,63,0.4)" stroke-width="0.5"/>
+                <line x1="200" y1="335" x2="200" y2="345" stroke="rgba(191,149,63,0.4)" stroke-width="0.5"/>
+                <g id="xray-particles"></g>
+              </svg>
+
+              <div class="xray-label xray-label-1" data-reveal="0.5"><div class="dash"></div><span>3-Layer Barrier</span></div>
+              <div class="xray-label xray-label-2" data-reveal="0.6"><span>Aroma Seal</span><div class="dash"></div></div>
+              <div class="xray-label xray-label-3" data-reveal="0.7">
+                <div class="xray-label-3-name">Integrated Dosing Scoop</div>
+                <div class="xray-label-3-sub">Precision: 5g</div>
+              </div>
+            </div>
+
+            <div class="xray-progress">
+              <span>X-Ray</span>
+              <div class="xray-bar"><div id="xray-bar-fill"></div></div>
+              <span>Reveal</span>
+            </div>
+          </div>
+
+          <div id="engineering-features" class="features-grid">
+            <!-- Filled by app.js from ENGINEERING_FEATURES -->
+          </div>
+        </div>
+
+        <div class="engineering-cta reveal">
+          <p>Every pouch is sealed with nitrogen flushing to ensure maximum freshness</p>
+          <div class="freshness-badge">
+            <div class="pulse-dot"></div>
+            <span>24-Month Freshness Guarantee</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ===============================================================
+         SECTION 4 — PRODUCT COLLECTION
+         Cards are auto-generated from data.js → PRODUCTS.
+         To add/remove a product or change a price, edit data.js — not here.
+         =============================================================== -->
+    <section id="collection" class="collection">
+      <div class="section-inner">
+        <div class="section-header reveal">
+          <span class="eyebrow">The Collection</span>
+          <h2>Signature <span class="gold-gradient">Blends</span></h2>
+          <p>Each blend is a masterpiece, crafted from generations of culinary wisdom and perfected through modern precision.</p>
+        </div>
+
+        <div id="product-grid" class="product-grid">
+          <!-- Filled by app.js -->
+        </div>
+
+        <div class="collection-cta reveal">
+          <button class="btn btn-gold-outline">View Full Collection</button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===============================================================
+         SECTION 5 — GALLERY (visual journey)
+         Photos are listed in data.js → GALLERY.
+         =============================================================== -->
+    <section class="gallery">
+      <div class="section-inner">
+        <div class="section-header reveal">
+          <span class="eyebrow">Visual Journey</span>
+          <h2>The <span class="gold-gradient">Gallery</span></h2>
+          <p>A visual celebration of color, texture, and flavor that defines the ROHILLA experience.</p>
+        </div>
+        <div id="gallery-grid" class="gallery-grid">
+          <!-- Filled by app.js -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===============================================================
+         SECTION 6 — COMBO BUILDER
+         The 3-item box with 10% discount. Logic in app.js.
+         =============================================================== -->
+    <section id="combo-builder" class="combo">
+      <div class="combo-decoration"></div>
+      <div class="section-inner">
+        <div class="section-header reveal">
+          <span class="eyebrow"><i data-lucide="sparkles"></i> Build Your Own</span>
+          <h2>The <span class="gold-gradient">Combo Builder</span></h2>
+          <p>Mix and match your favorites. Select any 3 pouches and unlock <span class="gold-strong">10% off</span> your entire box.</p>
+        </div>
+
+        <div class="combo-grid">
+          <div class="combo-side">
+            <h3 class="combo-label"><span class="dash"></span> Select Your Spices</h3>
+            <div id="combo-products" class="combo-products"></div>
+          </div>
+
+          <div class="combo-side">
+            <h3 class="combo-label">
+              <span class="dash"></span> Your Box
+              <span id="combo-count" class="combo-count">0/3 items</span>
+            </h3>
+            <div class="combo-box">
+              <div id="combo-empty" class="combo-empty">
+                <div class="combo-empty-icon"><i data-lucide="package"></i></div>
+                <p class="combo-empty-title">Your box is empty</p>
+                <p class="combo-empty-sub">Select 3 spices to unlock 10% off</p>
+              </div>
+
+              <div id="combo-items"></div>
+
+              <div class="combo-progress">
+                <div class="combo-progress-labels">
+                  <span>Progress</span>
+                  <span id="combo-progress-text">3 more needed</span>
+                </div>
+                <div class="combo-progress-bar"><div id="combo-progress-fill"></div></div>
+              </div>
+
+              <div id="combo-summary" class="combo-summary" hidden></div>
+
+              <button id="combo-add-btn" class="btn btn-gold w-full disabled" disabled>Add 0 Items to Cart</button>
+              <button id="combo-clear-btn" class="combo-clear" hidden>Clear Box</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===============================================================
+         SECTION 7 — RECIPES
+         Cards auto-generated from data.js → RECIPES.
+         Clicking a card opens a modal (handled in app.js).
+         =============================================================== -->
+    <section id="recipes" class="recipes">
+      <div class="section-inner">
+        <div class="section-header reveal">
+          <span class="eyebrow">The Lab</span>
+          <h2>Signature <span class="gold-gradient">Recipes</span></h2>
+          <p>Unlock the full potential of our spices with recipes crafted by master chefs and passed down through generations.</p>
+        </div>
+        <div id="recipe-grid" class="recipe-grid">
+          <!-- Filled by app.js -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ===============================================================
+       SECTION 8 — FOOTER
+       Address / phone / email and the links in the columns are
+       below — edit the text directly here.
+       =============================================================== -->
+  <footer class="footer">
+    <div class="section-inner">
+      <div class="footer-grid">
+
+        <div class="footer-brand reveal">
+          <span class="footer-logo gold-gradient">ROHILLA</span>
+          <p class="footer-tagline">Premium Indian spices, crafted with precision and passion. Bringing the authentic flavors of India to your kitchen.</p>
+          <!-- Address / phone / email are filled from CONFIG in data.js -->
+          <div id="footer-contacts" class="footer-contacts"></div>
+        </div>
+
+        <div class="footer-cols">
+          <div class="footer-col reveal">
+            <h4>Shop</h4>
+            <ul>
+              <li><a href="#">All Products</a></li>
+              <li><a href="#">Bestsellers</a></li>
+              <li><a href="#">New Arrivals</a></li>
+              <li><a href="#">Gift Cards</a></li>
+            </ul>
+          </div>
+          <div class="footer-col reveal">
+            <h4>Company</h4>
+            <ul>
+              <li><a href="#">Our Story</a></li>
+              <li><a href="#">The Lab</a></li>
+              <li><a href="#">Sustainability</a></li>
+              <li><a href="#">Careers</a></li>
+            </ul>
+          </div>
+          <div class="footer-col reveal">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">FAQs</a></li>
+              <li><a href="#">Shipping Info</a></li>
+              <li><a href="#">Returns</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-newsletter reveal">
+          <h4>Stay Updated</h4>
+          <p>Subscribe for exclusive recipes and offers.</p>
+          <form onsubmit="event.preventDefault(); alert('Thanks for subscribing!');">
+            <input type="email" placeholder="Your email" required />
+            <button type="submit" class="btn btn-gold w-full">Subscribe</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="section-inner footer-bottom-inner">
+        <p>© 2024 ROHILLA. All rights reserved.</p>
+        <div class="footer-socials">
+          <!-- Brand logos are NOT shipped by lucide (trademark reasons), so they're inlined here -->
+          <a href="#" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+          </a>
+          <a href="#" aria-label="Twitter">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+          </a>
+          <a href="#" aria-label="YouTube">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
+          </a>
+        </div>
+        <div class="footer-legal">
+          <a href="legal/privacy.html">Privacy Policy</a>
+          <a href="legal/terms.html">Terms of Service</a>
+          <a href="legal/shipping.html">Shipping</a>
+          <a href="legal/refund.html">Refunds</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-india">
+      <div class="section-inner footer-india-inner">
+        <span>Proudly Made in</span>
+        <span class="gold-text">India</span>
+        <span class="india-flag">🇮🇳</span>
+        <span class="footer-sep">•</span>
+        <!-- FSSAI number is required to be displayed for packaged food. Set in CONFIG.fssaiLicense -->
+        <span>FSSAI Lic: <span id="footer-fssai" class="gold-text">—</span></span>
+        <span class="footer-sep">•</span>
+        <span>GSTIN: <span id="footer-gstin" class="gold-text">—</span></span>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ===============================================================
+       CART DRAWER — slides in from the right.
+       All behaviour is in app.js. Layout below.
+       =============================================================== -->
+  <div id="cart-backdrop" class="cart-backdrop" hidden></div>
+  <aside id="cart-drawer" class="cart-drawer" hidden>
+    <div class="cart-header">
+      <div class="cart-title">
+        <i data-lucide="shopping-bag" class="gold-icon"></i>
+        <h2>Your Cart</h2>
+        <span id="cart-count-pill" class="cart-count-pill">0</span>
+      </div>
+      <button id="cart-close" class="icon-button" aria-label="Close cart"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="cart-body" id="cart-body">
+      <div id="cart-empty" class="cart-empty">
+        <div class="cart-empty-icon"><i data-lucide="shopping-bag"></i></div>
+        <p class="cart-empty-title">Your cart is empty</p>
+        <p class="cart-empty-sub">Add some spices to get started</p>
+      </div>
+      <div id="cart-upsell" class="cart-upsell" hidden></div>
+      <div id="cart-items" class="cart-items"></div>
+    </div>
+
+    <div id="cart-footer" class="cart-footer" hidden>
+      <div id="cart-discount-badge" class="cart-discount-badge" hidden></div>
+      <div class="cart-summary">
+        <div class="cart-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+        <div class="cart-row cart-row-discount" id="cart-discount-row" hidden><span>Discount</span><span id="cart-discount">₹0</span></div>
+        <div class="cart-row cart-row-total"><span>Total</span><span id="cart-total" class="gold-gradient">₹0</span></div>
+      </div>
+      <button id="checkout-btn" class="btn btn-gold w-full">
+        <span>Proceed to Checkout</span>
+        <i data-lucide="arrow-right"></i>
+      </button>
+      <p class="cart-shipping-note">Free shipping on orders above ₹500</p>
+    </div>
+  </aside>
+
+
+  <!-- ===============================================================
+       CHECKOUT MODAL — opens when user clicks "Proceed to Checkout".
+       Collects customer details, calculates GST + shipping, and sends
+       the order via WhatsApp (the standard for small Indian D2C shops).
+       =============================================================== -->
+  <div id="checkout-modal" class="checkout-modal" hidden>
+    <div class="checkout-backdrop"></div>
+    <div class="checkout-content">
+      <button id="checkout-modal-close" class="checkout-close" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="checkout-header">
+        <h2>Complete Your Order</h2>
+        <p>We'll confirm your order on WhatsApp within minutes.</p>
+      </div>
+
+      <form id="checkout-form" class="checkout-form" novalidate>
+        <div class="checkout-grid">
+          <!-- LEFT: customer details -->
+          <div>
+            <h3 class="checkout-section-label">Your Details</h3>
+
+            <div class="checkout-field">
+              <label for="co-name">Full Name *</label>
+              <input id="co-name" name="name" type="text" required autocomplete="name" />
+            </div>
+
+            <div class="checkout-row">
+              <div class="checkout-field">
+                <label for="co-phone">Phone (WhatsApp) *</label>
+                <input id="co-phone" name="phone" type="tel" required autocomplete="tel" placeholder="10 digit mobile" pattern="[6-9][0-9]{9}" />
+              </div>
+              <div class="checkout-field">
+                <label for="co-email">Email</label>
+                <input id="co-email" name="email" type="email" autocomplete="email" />
+              </div>
+            </div>
+
+            <h3 class="checkout-section-label">Delivery Address</h3>
+
+            <div class="checkout-field">
+              <label for="co-pincode">Pincode *</label>
+              <input id="co-pincode" name="pincode" type="text" required inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" />
+              <div id="co-pincode-status" class="checkout-pincode-status"></div>
+            </div>
+
+            <div class="checkout-field">
+              <label for="co-address">Full Address *</label>
+              <textarea id="co-address" name="address" rows="3" required placeholder="House / Flat, Street, Landmark"></textarea>
+            </div>
+
+            <div class="checkout-row">
+              <div class="checkout-field">
+                <label for="co-city">City</label>
+                <input id="co-city" name="city" type="text" />
+              </div>
+              <div class="checkout-field">
+                <label for="co-state">State</label>
+                <input id="co-state" name="state" type="text" />
+              </div>
+            </div>
+
+            <div class="checkout-field">
+              <label for="co-notes">Order notes (optional)</label>
+              <textarea id="co-notes" name="notes" rows="2" placeholder="Any special instructions"></textarea>
+            </div>
+          </div>
+
+          <!-- RIGHT: order summary -->
+          <div>
+            <h3 class="checkout-section-label">Order Summary</h3>
+            <div id="checkout-items" class="checkout-items"></div>
+
+            <div class="checkout-totals">
+              <div class="checkout-row-line"><span>Subtotal</span><span id="co-subtotal">₹0</span></div>
+              <div class="checkout-row-line discount" id="co-discount-row" hidden><span>Combo discount</span><span id="co-discount">-₹0</span></div>
+              <div class="checkout-row-line"><span id="co-shipping-label">Shipping</span><span id="co-shipping">₹0</span></div>
+              <div class="checkout-row-line"><span>GST (5%)</span><span id="co-gst">₹0</span></div>
+              <div class="checkout-row-line total"><span>Total</span><span id="co-total" class="gold-gradient">₹0</span></div>
+            </div>
+
+            <button type="submit" id="co-whatsapp-btn" class="btn btn-gold w-full checkout-pay-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
+              <span>Place Order via WhatsApp</span>
+            </button>
+
+            <!-- Razorpay option — disabled until backend exists. See note below. -->
+            <button type="button" id="co-razorpay-btn" class="btn btn-outline w-full checkout-pay-btn-secondary" disabled title="Online card / UPI payments require a backend server. Until your developer wires it up, please use WhatsApp checkout.">
+              Pay Online (Razorpay) — coming soon
+            </button>
+
+            <p class="checkout-note">
+              By placing your order you agree to our
+              <a href="legal/terms.html" target="_blank">Terms</a>,
+              <a href="legal/refund.html" target="_blank">Refund</a> and
+              <a href="legal/privacy.html" target="_blank">Privacy</a> policies.
+            </p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===============================================================
+       ORDER CONFIRMATION MODAL — shown after the WhatsApp tab opens.
+       =============================================================== -->
+  <div id="order-confirm-modal" class="checkout-modal" hidden>
+    <div class="checkout-backdrop"></div>
+    <div class="checkout-content checkout-confirm">
+      <div class="confirm-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Order Sent!</h2>
+      <p>Your order <strong id="confirm-order-id">—</strong> has been sent via WhatsApp.</p>
+      <p>If WhatsApp didn't open automatically, copy this message and send it manually:</p>
+      <textarea id="confirm-fallback-text" readonly class="confirm-fallback"></textarea>
+      <button id="confirm-done" class="btn btn-gold w-full">Done</button>
+    </div>
+  </div>
+
+  <!-- ===============================================================
+       RECIPE MODAL — opens when you click a recipe card.
+       =============================================================== -->
+  <div id="recipe-modal" class="recipe-modal" hidden>
+    <div class="recipe-modal-backdrop"></div>
+    <div class="recipe-modal-content" id="recipe-modal-content"></div>
+  </div>
+
+
+  <!-- ===============================================================
+       EXTERNAL LIBRARIES (loaded from internet CDNs)
+       =============================================================== -->
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+
+  <!-- YOUR FILES -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — ROHILLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <!--
+    NOTE: This is a STARTER privacy policy template appropriate for an Indian
+    D2C food brand under the Information Technology Act 2000, IT (Reasonable
+    Security Practices) Rules 2011, and the Digital Personal Data Protection
+    Act 2023. You SHOULD have it reviewed by a lawyer before going live.
+    Replace placeholders in [SQUARE BRACKETS] with your business details.
+  -->
+  <article class="legal-page">
+    <a href="../index.html" class="back-link">← Back to ROHILLA</a>
+
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Last updated: <span data-today></span></p>
+
+    <h2>1. Who we are</h2>
+    <p>This privacy policy explains how <strong>ROHILLA Traders</strong> ("we", "our", "us") collects, uses and protects information about you when you visit our website or place an order.</p>
+
+    <h2>2. What information we collect</h2>
+    <p>We collect only the information needed to fulfil your order and respond to your queries:</p>
+    <ul>
+      <li><strong>Identity & Contact:</strong> name, phone number, email address</li>
+      <li><strong>Delivery details:</strong> shipping address, pincode, city, state</li>
+      <li><strong>Order details:</strong> products, quantities, prices, order notes</li>
+      <li><strong>Payment information:</strong> handled directly by our payment partner (Razorpay). We do <em>not</em> see or store your card / UPI details on our servers.</li>
+      <li><strong>Communications:</strong> messages you send us on WhatsApp / email</li>
+    </ul>
+
+    <h2>3. How we use it</h2>
+    <ul>
+      <li>To process and deliver your order</li>
+      <li>To send order confirmations and shipping updates</li>
+      <li>To respond to customer support enquiries</li>
+      <li>To comply with Indian tax and consumer-protection law</li>
+      <li>If you opt in: to send occasional recipes and offers (you can unsubscribe any time)</li>
+    </ul>
+
+    <h2>4. Who we share it with</h2>
+    <p>We share the minimum necessary data with:</p>
+    <ul>
+      <li>Courier partners (e.g. Shiprocket, Delhivery, India Post) to deliver your order</li>
+      <li>Razorpay, for processing payments — covered by their own privacy policy</li>
+      <li>Government authorities, only if required by law</li>
+    </ul>
+    <p>We do <strong>not</strong> sell, rent or trade your information to anyone for marketing.</p>
+
+    <h2>5. How long we keep it</h2>
+    <p>Order and tax records are retained for 8 years to comply with the Income Tax Act and GST law. Marketing-list subscriptions are kept until you unsubscribe.</p>
+
+    <h2>6. Your rights</h2>
+    <p>You have the right to access, correct, or request deletion of your personal data. Email <strong><span data-email>—</span></strong> with the subject "Data Request" and we will respond within 30 days.</p>
+
+    <h2>7. Cookies</h2>
+    <p>We use a single browser <code>localStorage</code> entry to remember the items in your cart. We do not use third-party advertising or tracking cookies.</p>
+
+    <h2>8. Security</h2>
+    <p>The website is served over HTTPS. Payment data is processed only by Razorpay, a PCI-DSS compliant gateway. We never request or store your card / UPI PIN / OTP.</p>
+
+    <h2>9. Children</h2>
+    <p>Our products are intended for adults. We do not knowingly collect data from anyone under 18.</p>
+
+    <h2>10. Changes to this policy</h2>
+    <p>We may update this policy from time to time. The "Last updated" date at the top will reflect changes.</p>
+
+    <div class="legal-contact">
+      <p><strong>Grievance Officer (as required under IT Rules 2011):</strong></p>
+      <p>
+        [Officer Name]<br/>
+        ROHILLA Traders<br/>
+        <span data-address>—</span><br/>
+        Email: <span data-email>—</span><br/>
+        Phone: <span data-phone>—</span>
+      </p>
+    </div>
+  </article>
+
+  <script src="../data.js"></script>
+  <script>
+    // Fill placeholders from CONFIG so contact details stay in one place
+    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
+    document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
+    document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
+    document.querySelectorAll('[data-address]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactAddress) || '—');
+  </script>
+</body>
+</html>

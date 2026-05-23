@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shipping Policy — ROHILLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <article class="legal-page">
+    <a href="../index.html" class="back-link">← Back to ROHILLA</a>
+
+    <h1>Shipping Policy</h1>
+    <p class="legal-updated">Last updated: <span data-today></span></p>
+
+    <h2>Where we ship</h2>
+    <p>We ship across India through reputed courier partners (Shiprocket, Delhivery, India Post, Bluedart). Check serviceability at checkout by entering your pincode.</p>
+
+    <h2>Charges</h2>
+    <ul>
+      <li><strong>Flat ₹49</strong> on orders below ₹500</li>
+      <li><strong>FREE</strong> shipping on orders of ₹500 or more</li>
+      <li>COD (Cash on Delivery) is available on most pincodes (additional ₹30 COD handling fee may apply)</li>
+    </ul>
+
+    <h2>Processing time</h2>
+    <p>Orders are typically dispatched within 1–2 working days of confirmation. You will receive a tracking number on WhatsApp / email as soon as your parcel is handed over to the courier.</p>
+
+    <h2>Estimated delivery times</h2>
+    <ul>
+      <li><strong>Bareilly &amp; nearby:</strong> 1 day</li>
+      <li><strong>Other UP &amp; Delhi NCR:</strong> 2–3 days</li>
+      <li><strong>Tier 1 metros (Mumbai / Bangalore / Chennai / Hyderabad / Kolkata):</strong> 4–6 days</li>
+      <li><strong>Tier 2 / 3 towns &amp; remote pincodes:</strong> 5–8 days</li>
+    </ul>
+    <p>These are <em>estimates</em>. Festive seasons, weather and regional disruptions can add 2–3 days.</p>
+
+    <h2>Tracking</h2>
+    <p>You can track your order with the tracking number we send you. If you don't receive an update within 3 working days of placing your order, please contact us.</p>
+
+    <h2>Failed delivery / address issues</h2>
+    <p>If the courier is unable to deliver after 3 attempts due to incorrect address or non-availability, the parcel will be returned to us. Re-shipping will require fresh shipping charges. Refunds for returned-to-origin parcels will be processed minus original shipping cost.</p>
+
+    <h2>Damaged in transit</h2>
+    <p>If your order arrives damaged, please <strong>open the parcel in front of the delivery agent and report damage immediately</strong>. Take a photo of the damaged outer packaging and contact us within 24 hours of delivery. We will replace damaged items at no cost.</p>
+
+    <h2>International shipping</h2>
+    <p>We currently ship only within India. International shipping is on our roadmap — please email us if you'd like to be notified.</p>
+
+    <div class="legal-contact">
+      <p><strong>Questions about your order?</strong></p>
+      <p>
+        WhatsApp / Phone: <span data-phone>—</span><br/>
+        Email: <span data-email>—</span>
+      </p>
+    </div>
+  </article>
+
+  <script src="../data.js"></script>
+  <script>
+    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
+    document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
+    document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
+  </script>
+</body>
+</html>
