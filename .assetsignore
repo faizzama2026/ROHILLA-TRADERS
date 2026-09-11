@@ -1,0 +1,12 @@
+# Files that must NOT be published on rohillatraders.com.
+# Cloudflare serves every file in this folder unless it is listed here.
+CLAUDE.md
+README.md
+wrangler.jsonc
+.gitignore
+.assetsignore
+.git
+**/node_modules
+**/.DS_Store
+# Original 3 MB label PNGs — the site uses the small copies in img/
+rohilla images

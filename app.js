@@ -1,33 +1,43 @@
 /* =====================================================================
    ROHILLA — main behaviour file
-   Organised in the same top-to-bottom order as the HTML sections.
-   You should rarely need to edit this file. To change prices/products/
-   recipes, edit data.js. To change colours/spacing, edit styles.css.
+   Organised in the same top-to-bottom order as the page. You should
+   rarely need to edit this file: prices, products and recipes live in
+   data.js; colours and spacing live in styles.css.
    ===================================================================== */
 
 /* ----------------------- Small DOM helpers ------------------------- */
 const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const icons = () => { if (window.lucide) lucide.createIcons(); };
 
-/* Render hero trust indicators + footer contacts from CONFIG */
+
+/* Page scroll lock used by the cart, checkout and recipe pop-ups */
+const ScrollLock = {
+  lock()   { document.body.style.overflow = 'hidden'; },
+  unlock() {
+    const anyOpen = !$('#cart-drawer').hidden || !$('#checkout-modal').hidden ||
+                    !$('#order-confirm-modal').hidden || !$('#recipe-modal').hidden;
+    if (!anyOpen) document.body.style.overflow = '';
+  }
+};
+
+
+/* =====================================================================
+   BRANDING — trust chips, footer contacts, links from CONFIG
+   ===================================================================== */
 const Branding = {
   init() {
-    // Hero trust indicators
-    const stats = $('#hero-stats');
-    if (stats && window.CONFIG && window.CONFIG.trustIndicators) {
-      const html = window.CONFIG.trustIndicators.map((t, i) => `
-        ${i > 0 ? '<div class="stat-divider"></div>' : ''}
-        <div class="stat">
-          <div class="stat-num gold-gradient">${t.value}</div>
-          <div class="stat-label">${t.label}</div>
-        </div>
-      `).join('');
-      stats.innerHTML = html;
-    }
-
     const cfg = window.CONFIG;
     if (!cfg) return;
     const whatsappUrl = 'https://wa.me/' + cfg.whatsappNumber;
+
+    // Hero trust chips
+    const chips = $('#hero-stats');
+    if (chips && cfg.trustIndicators) {
+      chips.innerHTML = cfg.trustIndicators
+        .map(t => `<li class="trust-chip"><strong>${t.value}</strong> ${t.label}</li>`)
+        .join('');
+    }
 
     // Footer contacts
     const fc = $('#footer-contacts');
@@ -39,16 +49,18 @@ const Branding = {
       `;
     }
 
-    // Links that live in several places in the footer
+    // Links that live in several places
     $$('[data-email-link]').forEach(a => { a.href = 'mailto:' + cfg.contactEmail; });
     $$('[data-whatsapp-link]').forEach(a => { a.href = whatsappUrl; });
     $$('[data-instagram-link]').forEach(a => {
       if (cfg.instagramUrl) a.href = cfg.instagramUrl;
-      else a.closest('li') ? a.closest('li').remove() : a.remove();
+      else (a.closest('li') || a).remove();
     });
     $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
+    $$('[data-free-ship]').forEach(el => { el.textContent = window.formatPrice(cfg.freeShippingThreshold); });
+    $$('[data-phone-text]').forEach(el => { el.textContent = cfg.contactPhone; });
 
-    // FSSAI + GSTIN badges in footer-india — hidden until real numbers are set
+    // FSSAI + GSTIN in the footer — hidden until real numbers are set
     Branding.fillOrHide('#footer-fssai', '[data-fssai-row]', cfg.fssaiLicense);
     Branding.fillOrHide('#footer-gstin', '[data-gstin-row]', cfg.gstin);
   },
@@ -66,19 +78,20 @@ const Branding = {
 };
 
 
-/* ============================================================
+/* =====================================================================
    NAV LINKS — edit here to change menu items
-   ============================================================ */
+   ===================================================================== */
 const NAV_LINKS = [
-  { label: 'Collection',     href: '#collection' },
-  { label: 'Engineering',    href: '#engineering' },
-  { label: 'Recipes',        href: '#recipes' },
-  { label: 'Build Your Box', href: '#combo-builder' },
+  { label: 'Shop',         href: '#collection' },
+  { label: 'Chef Combo',   href: '#chef-combo' },
+  { label: 'How to Order', href: '#how-to-order' },
+  { label: 'Recipes',      href: '#recipes' },
 ];
 
-/* ============================================================
-   CART — single source of truth for the cart drawer
-   ============================================================ */
+
+/* =====================================================================
+   CART — single source of truth
+   ===================================================================== */
 const Cart = {
   items: [],                  // { product, quantity }[]
   isOpen: false,
@@ -100,20 +113,28 @@ const Cart = {
     catch (e) { /* ignore quota errors */ }
   },
 
+  qty(productId) {
+    const item = this.items.find(i => i.product.id === productId);
+    return item ? item.quantity : 0;
+  },
+
   totals() {
     const totalItems = this.items.reduce((s, i) => s + i.quantity, 0);
     const subtotal   = this.items.reduce((s, i) => s + i.product.price * i.quantity, 0);
-    const discount   = totalItems >= 3 ? Math.round(subtotal * 0.1) : 0;
+    const mb = window.CONFIG.multiBuy || { minItems: 0, percent: 0 };
+    const discount   = (mb.percent > 0 && totalItems >= mb.minItems) ? Math.round(subtotal * mb.percent / 100) : 0;
     return { totalItems, subtotal, discount, total: subtotal - discount };
   },
 
+  // Adding never pops the drawer open (annoying on phones) — a toast confirms it instead.
   add(product) {
     const existing = this.items.find(i => i.product.id === product.id);
     if (existing) existing.quantity += 1;
     else this.items.push({ product, quantity: 1 });
     this.upsellProduct = window.getUpsellProduct(product.id);
-    this.isOpen = true;
+    if (this.upsellProduct && this.qty(this.upsellProduct.id) > 0) this.upsellProduct = null;
     this.save(); CartUI.render();
+    Toast.show(`Added ${product.name} (${window.sizeLabel(product)})`);
   },
   remove(productId) {
     this.items = this.items.filter(i => i.product.id !== productId);
@@ -131,253 +152,167 @@ const Cart = {
     this.upsellProduct = null;
     this.save(); CartUI.render();
   },
-  open()   { this.isOpen = true;  CartUI.render(); },
-  close()  { this.isOpen = false; CartUI.render(); },
-  toggle() { this.isOpen = !this.isOpen; CartUI.render(); },
+  open()  { this.isOpen = true;  $('#toast').hidden = true; CartUI.render(); },
+  close() { this.isOpen = false; CartUI.render(); },
   dismissUpsell() { this.upsellProduct = null; CartUI.render(); }
 };
 
-/* ============================================================
-   COMBO BUILDER STATE
-   ============================================================ */
-const Combo = {
-  items: [],       // products in the box
-  maxItems: 3,
-  discount: 0.10,
 
-  add(product) {
-    if (this.items.length >= this.maxItems) return false;
-    if (this.items.some(p => p.id === product.id)) return false;
-    this.items.push(product);
-    ComboUI.render();
-    return true;
+/* =====================================================================
+   ADD / STEPPER — the "Add" button that turns into  −  1  +
+   Used by product cards and the Chef Special Combo section.
+   ===================================================================== */
+const Buy = {
+  html(productId, addLabel = 'Add') {
+    const q = Cart.qty(productId);
+    if (q === 0) {
+      return `<button type="button" class="buy-add" data-buy-add="${productId}">
+                <i data-lucide="plus"></i><span>${addLabel}</span>
+              </button>`;
+    }
+    return `<div class="buy-stepper" role="group" aria-label="Quantity in cart">
+              <button type="button" data-buy-dec="${productId}" aria-label="Remove one"><i data-lucide="minus"></i></button>
+              <span aria-live="polite">${q} in cart</span>
+              <button type="button" data-buy-inc="${productId}" aria-label="Add one more"><i data-lucide="plus"></i></button>
+            </div>`;
   },
-  remove(productId) {
-    this.items = this.items.filter(p => p.id !== productId);
-    ComboUI.render();
+
+  // One click handler for the whole page
+  init() {
+    document.addEventListener('click', (e) => {
+      const add = e.target.closest('[data-buy-add]');
+      const inc = e.target.closest('[data-buy-inc]');
+      const dec = e.target.closest('[data-buy-dec]');
+      if (add) Cart.add(window.getProductById(add.dataset.buyAdd));
+      else if (inc) Cart.updateQuantity(inc.dataset.buyInc, Cart.qty(inc.dataset.buyInc) + 1);
+      else if (dec) Cart.updateQuantity(dec.dataset.buyDec, Cart.qty(dec.dataset.buyDec) - 1);
+    });
   },
-  clear() { this.items = []; ComboUI.render(); },
-  total() { return this.items.reduce((s, p) => s + p.price, 0); },
-  discountedTotal() {
-    const total = this.total();
-    return this.items.length >= 3 ? Math.round(total * (1 - this.discount)) : total;
-  },
-  isFull() { return this.items.length >= this.maxItems; },
-  canAddMore() { return this.items.length < this.maxItems; }
+
+  // Refresh every Add/stepper area on the page (called after each cart change)
+  refresh() {
+    $$('[data-buy-for]').forEach(el => {
+      el.innerHTML = Buy.html(el.dataset.buyFor, el.dataset.buyLabel || 'Add');
+    });
+  }
 };
 
 
 /* =====================================================================
-   SECTION 1 — NAVIGATION
+   NAVIGATION + mobile menu
    ===================================================================== */
 const Nav = {
   init() {
-    // Desktop links
     const desktop = $('#nav-links');
-    NAV_LINKS.forEach(link => {
-      const btn = document.createElement('button');
-      btn.className = 'nav-link';
-      btn.textContent = link.label;
-      btn.addEventListener('click', () => Nav.scrollTo(link.href));
-      desktop.appendChild(btn);
-    });
-
-    // Mobile links
-    const mobile = $('#mobile-nav-links');
+    const mobile  = $('#mobile-nav-links');
     NAV_LINKS.forEach((link, i) => {
-      const btn = document.createElement('button');
-      btn.textContent = link.label;
-      btn.style.animationDelay = (0.1 + i * 0.05) + 's';
-      btn.addEventListener('click', () => {
-        Nav.scrollTo(link.href);
-        Nav.closeMobile();
-      });
-      mobile.appendChild(btn);
+      const a = document.createElement('a');
+      a.className = 'nav-link';
+      a.href = link.href;
+      a.textContent = link.label;
+      desktop.appendChild(a);
+
+      const m = document.createElement('a');
+      m.href = link.href;
+      m.textContent = link.label;
+      m.style.animationDelay = (0.05 + i * 0.05) + 's';
+      m.addEventListener('click', () => Nav.closeMobile());
+      mobile.appendChild(m);
     });
 
-    // Scroll → toggle "scrolled" class on header
-    window.addEventListener('scroll', () => {
-      $('#site-header').classList.toggle('scrolled', window.scrollY > 100);
-    }, { passive: true });
+    // Solid header once the page scrolls
+    const header = $('#site-header');
+    const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
-    // Mobile menu toggle
     $('#mobile-menu-toggle').addEventListener('click', () => {
-      const menu = $('#mobile-menu');
-      const isHidden = menu.hasAttribute('hidden');
-      if (isHidden) Nav.openMobile(); else Nav.closeMobile();
+      if ($('#mobile-menu').hidden) Nav.openMobile(); else Nav.closeMobile();
     });
-
-    // Generic [data-scroll-to] buttons (Hero CTAs etc.)
-    $$('[data-scroll-to]').forEach(el => {
-      el.addEventListener('click', () => Nav.scrollTo(el.dataset.scrollTo));
-    });
-
-    // Cart button
-    $('#cart-button').addEventListener('click', () => Cart.toggle());
-  },
-
-  scrollTo(href) {
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    $('#cart-button').addEventListener('click', () => Cart.open());
   },
 
   openMobile() {
-    $('#mobile-menu').removeAttribute('hidden');
+    $('#mobile-menu').hidden = false;
     $('#menu-open-icon').setAttribute('hidden', '');
     $('#menu-close-icon').removeAttribute('hidden');
+    $('#mobile-menu-toggle').setAttribute('aria-expanded', 'true');
   },
   closeMobile() {
-    $('#mobile-menu').setAttribute('hidden', '');
+    $('#mobile-menu').hidden = true;
     $('#menu-open-icon').removeAttribute('hidden');
     $('#menu-close-icon').setAttribute('hidden', '');
+    $('#mobile-menu-toggle').setAttribute('aria-expanded', 'false');
   }
 };
 
 
 /* =====================================================================
-   SECTION 2 — HERO (mouse spotlight + gyroscope tilt on pouch)
+   HERO — soft gold spotlight that follows the mouse (desktop only)
    ===================================================================== */
 const Hero = {
   init() {
-    this.initSpotlight();
-    this.initGyroscope();
-  },
-
-  initSpotlight() {
     const el = $('#hero-spotlight');
-    if (!el) return;
-    let nx = 0, ny = 0, lastUpdate = 0;
-
+    if (!el || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    let last = 0;
     window.addEventListener('mousemove', (e) => {
       const now = performance.now();
-      if (now - lastUpdate < 16) return;   // ~60fps throttle
-      lastUpdate = now;
-      nx = (e.clientX / window.innerWidth - 0.5) * 2;
-      ny = (e.clientY / window.innerHeight - 0.5) * 2;
-
-      if (window.gsap) {
-        gsap.to(el, {
-          x: nx * 100,
-          y: ny * 50,
-          duration: 0.8,
-          ease: 'power2.out',
-          overwrite: 'auto'
-        });
-      } else {
-        el.style.transform = `translateX(calc(-50% + ${nx * 100}px)) translateY(${ny * 50}px)`;
-      }
+      if (now - last < 32) return;
+      last = now;
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      el.style.transform = `translateX(calc(-50% + ${nx * 80}px)) translateY(${ny * 40}px)`;
     }, { passive: true });
-  },
-
-  initGyroscope() {
-    const el = $('#hero-pouch');
-    if (!el) return;
-
-    const intensity = 12;
-    const smoothness = 0.08;
-    let cur = { x: 0, y: 0 };
-    let tgt = { x: 0, y: 0 };
-
-    el.addEventListener('mousemove', (e) => {
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = (e.clientX - cx) / (rect.width / 2);
-      const dy = (e.clientY - cy) / (rect.height / 2);
-      tgt.x = -Math.max(-1, Math.min(1, dy)) * intensity;
-      tgt.y =  Math.max(-1, Math.min(1, dx)) * intensity;
-    }, { passive: true });
-
-    el.addEventListener('mouseleave', () => { tgt = { x: 0, y: 0 }; }, { passive: true });
-
-    const animate = () => {
-      cur.x += (tgt.x - cur.x) * smoothness;
-      cur.y += (tgt.y - cur.y) * smoothness;
-      el.style.transform = `perspective(1000px) rotateX(${cur.x}deg) rotateY(${cur.y}deg)`;
-      requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
   }
 };
 
 
 /* =====================================================================
-   SECTION 3 — ENGINEERING (X-ray reveal, GSAP ScrollTrigger)
+   CHEF SPECIAL COMBO — spotlight section built from data.js (prod_008)
    ===================================================================== */
-const Engineering = {
+const ComboSpot = {
   init() {
-    this.renderFeatures();
-    this.renderXrayParticles();
-    this.initXrayScroll();
-  },
+    const box = $('#combo-spot');
+    if (!box) return;
+    const p = window.getProductById(box.dataset.product);
+    if (!p) { $('#chef-combo').remove(); return; }
 
-  renderFeatures() {
-    const grid = $('#engineering-features');
-    window.ENGINEERING_FEATURES.forEach((f, i) => {
-      const card = document.createElement('div');
-      card.className = 'feature-card';
-      card.style.transitionDelay = (i * 0.1) + 's';
-      card.innerHTML = `
-        <div class="feature-card-inner">
-          <div class="feature-icon"><i data-lucide="${f.icon}"></i></div>
-          <div>
-            <h3>${f.title}</h3>
-            <p>${f.description}</p>
-            <span class="feature-spec">${f.spec}</span>
+    const save = p.originalPrice ? p.originalPrice - p.price : 0;
+    box.innerHTML = `
+      <div class="combo-spot-media">
+        <img src="${p.wideImage || p.images[0]}" alt="${p.name}: Haldi, Dhaniya and Lal Mirch pouches" loading="lazy" width="800" height="600" />
+        ${save ? `<span class="combo-spot-save">Save ${window.formatPrice(save)}</span>` : ''}
+      </div>
+      <div class="combo-spot-body">
+        <span class="eyebrow">Best Value</span>
+        <h2 id="combo-spot-title">${p.name}</h2>
+        <p class="combo-spot-desc">The three everyday essentials in one pack. Pure single spices, no added colour.</p>
+
+        <ul class="combo-spot-items">
+          ${(p.contents || []).map(c => `
+            <li>
+              <img src="${c.image}" alt="${c.name} pouch" loading="lazy" width="360" height="480" />
+              <span class="combo-spot-item-name">${c.name}</span>
+              <span class="combo-spot-item-sub">${c.weight}</span>
+            </li>`).join('')}
+        </ul>
+
+        <div class="combo-spot-buy">
+          <div class="combo-spot-price">
+            <span class="product-price gold-gradient">${window.formatPrice(p.price)}</span>
+            ${p.originalPrice ? `<span class="product-strike">MRP ${window.formatPrice(p.originalPrice)}</span>` : ''}
+            <span class="combo-spot-weight">${window.sizeLabel(p)} = ${p.weight_g}g</span>
           </div>
+          <div class="buy-slot buy-slot-lg" data-buy-for="${p.id}" data-buy-label="Add Combo to Cart"></div>
         </div>
-      `;
-      grid.appendChild(card);
-    });
-  },
-
-  // SVG sprinkle of "spice particles" inside the wireframe
-  renderXrayParticles() {
-    const g = $('#xray-particles');
-    if (!g) return;
-    for (let i = 0; i < 20; i++) {
-      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      c.setAttribute('cx', 40 + Math.random() * 200);
-      c.setAttribute('cy', 60 + Math.random() * 200);
-      c.setAttribute('r',  1 + Math.random() * 2);
-      c.setAttribute('fill', 'rgba(191, 149, 63, 0.4)');
-      g.appendChild(c);
-    }
-  },
-
-  initXrayScroll() {
-    if (!window.gsap || !window.ScrollTrigger) return;
-    gsap.registerPlugin(ScrollTrigger);
-
-    const section   = $('#engineering');
-    const pouch     = $('#xray-pouch');
-    const wireframe = $('#xray-wireframe');
-    const barFill   = $('#xray-bar-fill');
-    const labels    = $$('.xray-label');
-
-    ScrollTrigger.create({
-      trigger: section,
-      start: 'top 60%',
-      end: 'center center',
-      scrub: 0.5,
-      onUpdate: (self) => {
-        const p = self.progress;
-        pouch.style.opacity     = 1 - p * 0.7;
-        wireframe.style.opacity = p;
-        barFill.style.width     = (p * 100) + '%';
-
-        labels.forEach(label => {
-          const threshold = parseFloat(label.dataset.reveal);
-          label.classList.toggle('is-revealed', p > threshold);
-        });
-      }
-    });
+      </div>
+    `;
   }
 };
 
 
 /* =====================================================================
-   SECTION 4 — PRODUCT COLLECTION
+   SHOP — product cards (one card per product, size switch for 100g/50g)
    ===================================================================== */
 const Collection = {
   init() {
@@ -392,262 +327,102 @@ const Collection = {
       g.variants.push(p);
     });
 
-    groups.forEach((g, i) => {
-      const card = document.createElement('div');
+    groups.forEach(g => {
+      const card = document.createElement('article');
       card.className = 'product-card';
-      card.style.transitionDelay = (i * 0.1) + 's';
       card._variants = g.variants;
       Collection.renderCard(card, g.variants[0]);
       grid.appendChild(card);
     });
 
-    // Delegate size switches and "add to cart" clicks
     grid.addEventListener('click', (e) => {
       const sizeBtn = e.target.closest('[data-size]');
-      if (sizeBtn) {
-        const card = sizeBtn.closest('.product-card');
-        Collection.renderCard(card, window.getProductById(sizeBtn.dataset.size));
-        if (window.lucide) lucide.createIcons();
-        return;
-      }
-      const btn = e.target.closest('[data-add]');
-      if (!btn) return;
-      const product = window.getProductById(btn.dataset.add);
-      if (product) Cart.add(product);
+      if (!sizeBtn) return;
+      Collection.renderCard(sizeBtn.closest('.product-card'), window.getProductById(sizeBtn.dataset.size));
+      icons();
     });
   },
 
   renderCard(card, p) {
     const variants = card._variants;
     const badges = [];
-    if (p.isBestseller)   badges.push(`<span class="badge badge-bestseller"><i data-lucide="trending-up"></i>Bestseller</span>`);
-    if (p.isNew)          badges.push(`<span class="badge badge-new"><i data-lucide="sparkles"></i>New</span>`);
-    if (p.originalPrice)  badges.push(`<span class="badge badge-discount">${window.formatDiscount(p.price, p.originalPrice)}</span>`);
+    if (p.originalPrice) badges.push(`<span class="badge badge-discount">${window.formatDiscount(p.price, p.originalPrice)}</span>`);
+    if (p.isNew)         badges.push(`<span class="badge badge-new">New</span>`);
+    if (p.isBestseller)  badges.push(`<span class="badge badge-bestseller">Bestseller</span>`);
 
-    // Only show rating row when there are real reviews (no fake stars on day 1)
+    // Only show ratings when there are real reviews (no fake stars)
     const ratingHtml = p.reviewCount > 0 ? `
       <div class="product-rating">
-        <div class="product-rating-stars"><i data-lucide="star"></i><span class="product-rating-num">${p.rating}</span></div>
+        <i data-lucide="star"></i><span>${p.rating}</span>
         <span class="product-rating-count">(${p.reviewCount.toLocaleString()})</span>
       </div>` : '';
 
     card.innerHTML = `
       <div class="product-image">
-        <img src="${p.images[0]}" alt="${p.name}" loading="lazy" />
-        <div class="product-image-overlay"></div>
+        <img src="${p.images[0]}" alt="${p.name} ${window.sizeLabel(p)} pouch" loading="lazy" width="500" height="750" />
         <div class="product-badges">${badges.join('')}</div>
-        <button class="product-quick-add" data-add="${p.id}" aria-label="Quick add ${p.name}">
-          <i data-lucide="shopping-bag"></i>
-        </button>
       </div>
       <div class="product-body">
         ${ratingHtml}
         <h3 class="product-name">${p.name}</h3>
-        <p class="product-sku">${p.sku}</p>
         <p class="product-short">${p.shortDescription}</p>
-        <div class="product-price-row">
-          ${variants.length > 1 ? `
-            <div class="product-sizes" role="group" aria-label="Pack size">
-              ${variants.map(v => `<button type="button" class="product-size${v.id === p.id ? ' is-active' : ''}" data-size="${v.id}" aria-pressed="${v.id === p.id}">${window.sizeLabel(v)}</button>`).join('')}
-            </div>` : `<span class="product-weight">${window.sizeLabel(p)}</span>`}
-          <div class="product-prices">
-            ${p.originalPrice ? `<span class="product-strike">${window.formatPrice(p.originalPrice)}</span>` : ''}
-            <span class="product-price gold-gradient">${window.formatPrice(p.price)}</span>
-          </div>
+        ${variants.length > 1 ? `
+          <div class="product-sizes" role="group" aria-label="Pack size">
+            ${variants.map(v => `<button type="button" class="product-size${v.id === p.id ? ' is-active' : ''}" data-size="${v.id}" aria-pressed="${v.id === p.id}">${window.sizeLabel(v)}</button>`).join('')}
+          </div>` : `<div class="product-sizes"><span class="product-size is-static">${window.sizeLabel(p)}</span></div>`}
+        <div class="product-prices">
+          <span class="product-price gold-gradient">${window.formatPrice(p.price)}</span>
+          ${p.originalPrice ? `<span class="product-strike">${window.formatPrice(p.originalPrice)}</span>` : ''}
         </div>
-        <button class="product-add-btn" data-add="${p.id}">Add to Cart</button>
+        <div class="buy-slot" data-buy-for="${p.id}"></div>
       </div>
     `;
+    card.querySelector('[data-buy-for]').innerHTML = Buy.html(p.id);
   }
 };
 
 
 /* =====================================================================
-   SECTION 5 — GALLERY
+   WHY ROHILLA — feature cards
    ===================================================================== */
-const Gallery = {
+const Engineering = {
   init() {
-    const grid = $('#gallery-grid');
-    window.GALLERY.forEach((img, i) => {
-      const tile = document.createElement('div');
-      tile.className = 'gallery-item ' + img.span;
-      tile.style.transitionDelay = (i * 0.1) + 's';
-      tile.innerHTML = `
-        <img src="${img.src}" alt="${img.alt}" loading="lazy" />
-        <div class="gallery-item-overlay"></div>
-        <div class="gallery-item-content">
-          <span class="gallery-item-eyebrow">${img.alt}</span>
-          <h3 class="gallery-item-title">${img.title}</h3>
+    const grid = $('#engineering-features');
+    grid.innerHTML = window.ENGINEERING_FEATURES.map(f => `
+      <div class="feature-card">
+        <div class="feature-icon"><i data-lucide="${f.icon}"></i></div>
+        <div>
+          <h3>${f.title}</h3>
+          <p>${f.description}</p>
+          <span class="feature-spec">${f.spec}</span>
         </div>
-      `;
-      grid.appendChild(tile);
-    });
+      </div>
+    `).join('');
   }
 };
 
 
 /* =====================================================================
-   SECTION 6 — COMBO BUILDER
-   ===================================================================== */
-const ComboUI = {
-  init() {
-    // Render selectable products (left column)
-    const list = $('#combo-products');
-    window.PRODUCTS.filter(p => p.inComboBuilder !== false).forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'combo-product';
-      div.dataset.productId = p.id;
-      div.innerHTML = `
-        <div class="combo-product-inner">
-          <div class="combo-product-img"><img src="${p.images[0]}" alt="${p.name}" loading="lazy" /></div>
-          <div class="combo-product-info">
-            <h4>${p.name}</h4>
-            <p>${window.formatPrice(p.price)}</p>
-          </div>
-          <button class="combo-product-btn" data-combo-toggle="${p.id}" aria-label="Toggle ${p.name}">
-            <i data-lucide="plus"></i>
-          </button>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-
-    list.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-combo-toggle]');
-      if (!btn) return;
-      const id = btn.dataset.comboToggle;
-      const product = window.getProductById(id);
-      if (Combo.items.some(p => p.id === id)) Combo.remove(id);
-      else Combo.add(product);
-    });
-
-    // Add-to-cart and clear buttons
-    $('#combo-add-btn').addEventListener('click', () => {
-      if (Combo.items.length === 0) return;
-      Combo.items.forEach(p => Cart.add(p));
-      const btn = $('#combo-add-btn');
-      const original = btn.textContent;
-      btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:.5rem"><i data-lucide="check"></i> Added to Cart!</span>';
-      if (window.lucide) lucide.createIcons();
-      setTimeout(() => {
-        Combo.clear();
-        btn.textContent = original;
-      }, 2000);
-    });
-
-    $('#combo-clear-btn').addEventListener('click', () => Combo.clear());
-
-    ComboUI.render();
-  },
-
-  render() {
-    const items = Combo.items;
-    const count = items.length;
-
-    // Header count
-    $('#combo-count').textContent = count + '/3 items';
-
-    // Product selection state (highlighting + button state)
-    $$('.combo-product').forEach(card => {
-      const id = card.dataset.productId;
-      const inBox = items.some(p => p.id === id);
-      const btn = card.querySelector('.combo-product-btn');
-      card.classList.toggle('selected', inBox);
-      btn.classList.toggle('checked', inBox);
-      btn.classList.toggle('disabled', !inBox && !Combo.canAddMore());
-      btn.innerHTML = `<i data-lucide="${inBox ? 'check' : 'plus'}"></i>`;
-    });
-
-    // Box: empty state vs items
-    $('#combo-empty').style.display = count === 0 ? 'flex' : 'none';
-    const itemsBox = $('#combo-items');
-    itemsBox.innerHTML = '';
-    items.forEach(p => {
-      const row = document.createElement('div');
-      row.className = 'combo-item';
-      row.innerHTML = `
-        <img src="${p.images[0]}" alt="${p.name}" />
-        <div class="combo-item-info">
-          <h4>${p.name}</h4>
-          <p>${window.formatPrice(p.price)}</p>
-        </div>
-        <button class="combo-item-remove" data-combo-remove="${p.id}" aria-label="Remove ${p.name}">
-          <i data-lucide="x"></i>
-        </button>
-      `;
-      itemsBox.appendChild(row);
-    });
-    itemsBox.querySelectorAll('[data-combo-remove]').forEach(btn => {
-      btn.addEventListener('click', () => Combo.remove(btn.dataset.comboRemove));
-    });
-
-    // Progress bar
-    const full = Combo.isFull();
-    const fill = $('#combo-progress-fill');
-    fill.style.width = ((count / 3) * 100) + '%';
-    fill.classList.toggle('full', full);
-    const progressText = $('#combo-progress-text');
-    progressText.textContent = full ? 'Box Full!' : (3 - count) + ' more needed';
-    progressText.classList.toggle('full', full);
-
-    // Price summary
-    const summary = $('#combo-summary');
-    if (count > 0) {
-      const total = Combo.total();
-      const discounted = Combo.discountedTotal();
-      const savings = total - discounted;
-      summary.removeAttribute('hidden');
-      summary.innerHTML = `
-        <div class="combo-summary-row"><span>Subtotal</span><span>${window.formatPrice(total)}</span></div>
-        ${full ? `<div class="combo-summary-row discount"><span>Combo Discount (10%)</span><span>-${window.formatPrice(savings)}</span></div>` : ''}
-        <div class="combo-summary-total"><span>Total</span><span class="gold-gradient">${window.formatPrice(discounted)}</span></div>
-      `;
-    } else {
-      summary.setAttribute('hidden', '');
-      summary.innerHTML = '';
-    }
-
-    // Add-to-cart button
-    const addBtn = $('#combo-add-btn');
-    addBtn.textContent = 'Add ' + count + ' Item' + (count !== 1 ? 's' : '') + ' to Cart';
-    addBtn.classList.toggle('disabled', count === 0);
-    addBtn.disabled = count === 0;
-
-    // Clear button
-    $('#combo-clear-btn').toggleAttribute('hidden', count === 0);
-
-    if (window.lucide) lucide.createIcons();
-  }
-};
-
-
-/* =====================================================================
-   SECTION 7 — RECIPES (cards + modal)
+   RECIPES — cards + pop-up
    ===================================================================== */
 const Recipes = {
   init() {
     const grid = $('#recipe-grid');
-    window.RECIPES.forEach((r, i) => {
-      const diffClass = r.difficulty.toLowerCase();
-      const card = document.createElement('div');
+    window.RECIPES.forEach(r => {
+      const card = document.createElement('button');
+      card.type = 'button';
       card.className = 'recipe-card';
-      card.style.transitionDelay = (i * 0.1) + 's';
       card.innerHTML = `
-        <div class="recipe-card-inner">
-          <div class="recipe-card-image">
-            <img src="${r.image}" alt="${r.title}" loading="lazy" />
-            <span class="recipe-difficulty ${diffClass}">${r.difficulty}</span>
-            <div class="recipe-card-hover">
-              <span class="recipe-card-hover-pill">View Recipe <i data-lucide="arrow-right"></i></span>
-            </div>
-          </div>
-          <div class="recipe-card-body">
-            <h3 class="recipe-card-title">${r.title}</h3>
-            <p class="recipe-card-desc">${r.description}</p>
-            <div class="recipe-card-meta">
-              <div><i data-lucide="clock"></i><span>${r.prepTime + r.cookTime} min</span></div>
-              <div><i data-lucide="users"></i><span>${r.servings} servings</span></div>
-            </div>
+        <div class="recipe-card-image">
+          <img src="${r.image}" alt="${r.title}" loading="lazy" />
+          <span class="recipe-difficulty ${r.difficulty.toLowerCase()}">${r.difficulty}</span>
+        </div>
+        <div class="recipe-card-body">
+          <h3 class="recipe-card-title">${r.title}</h3>
+          <p class="recipe-card-desc">${r.description}</p>
+          <div class="recipe-card-meta">
+            <span><i data-lucide="clock"></i>${r.prepTime + r.cookTime} min</span>
+            <span><i data-lucide="users"></i>Serves ${r.servings}</span>
           </div>
         </div>
       `;
@@ -655,45 +430,43 @@ const Recipes = {
       grid.appendChild(card);
     });
 
-    // Close modal on backdrop click / Esc
     $('#recipe-modal').addEventListener('click', (e) => {
-      if (e.target.classList.contains('recipe-modal-backdrop') || e.target.id === 'recipe-modal') {
-        Recipes.closeModal();
-      }
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') Recipes.closeModal();
+      if (e.target.classList.contains('recipe-modal-backdrop') || e.target.id === 'recipe-modal') Recipes.closeModal();
     });
   },
 
   openModal(r) {
-    const diffClass = r.difficulty.toLowerCase();
+    const products = (r.relatedProductIds || []).map(id => window.getProductById(id)).filter(Boolean);
     const content = $('#recipe-modal-content');
     content.innerHTML = `
       <button class="recipe-modal-close" aria-label="Close"><i data-lucide="x"></i></button>
       <div class="recipe-modal-image">
         <img src="${r.image}" alt="${r.title}" />
         <div class="recipe-modal-title-wrap">
-          <span class="recipe-difficulty ${diffClass}">${r.difficulty}</span>
+          <span class="recipe-difficulty ${r.difficulty.toLowerCase()}">${r.difficulty}</span>
           <h2>${r.title}</h2>
         </div>
       </div>
       <div class="recipe-modal-body">
         <p class="recipe-modal-desc">${r.description}</p>
         <div class="recipe-modal-meta">
-          <div class="recipe-meta-item">
-            <div class="icon-box"><i data-lucide="clock"></i></div>
-            <div><div class="recipe-meta-label">Prep Time</div><div class="recipe-meta-value">${r.prepTime} min</div></div>
-          </div>
-          <div class="recipe-meta-item">
-            <div class="icon-box"><i data-lucide="chef-hat"></i></div>
-            <div><div class="recipe-meta-label">Cook Time</div><div class="recipe-meta-value">${r.cookTime} min</div></div>
-          </div>
-          <div class="recipe-meta-item">
-            <div class="icon-box"><i data-lucide="users"></i></div>
-            <div><div class="recipe-meta-label">Servings</div><div class="recipe-meta-value">${r.servings} people</div></div>
-          </div>
+          <div class="recipe-meta-item"><div class="icon-box"><i data-lucide="clock"></i></div>
+            <div><div class="recipe-meta-label">Prep</div><div class="recipe-meta-value">${r.prepTime} min</div></div></div>
+          <div class="recipe-meta-item"><div class="icon-box"><i data-lucide="chef-hat"></i></div>
+            <div><div class="recipe-meta-label">Cook</div><div class="recipe-meta-value">${r.cookTime} min</div></div></div>
+          <div class="recipe-meta-item"><div class="icon-box"><i data-lucide="users"></i></div>
+            <div><div class="recipe-meta-label">Serves</div><div class="recipe-meta-value">${r.servings}</div></div></div>
         </div>
+        ${products.length ? `
+          <div class="recipe-buy">
+            <p class="recipe-buy-title">You'll need</p>
+            ${products.map(p => `
+              <div class="recipe-buy-row">
+                <img src="${p.images[0]}" alt="" width="48" height="72" />
+                <div class="recipe-buy-info"><span>${p.name}</span><span>${window.sizeLabel(p)} · ${window.formatPrice(p.price)}</span></div>
+                <div class="buy-slot buy-slot-sm" data-buy-for="${p.id}"></div>
+              </div>`).join('')}
+          </div>` : ''}
         <div class="recipe-modal-grid">
           <div>
             <h3>Ingredients</h3>
@@ -711,160 +484,167 @@ const Recipes = {
       </div>
     `;
     content.querySelector('.recipe-modal-close').addEventListener('click', Recipes.closeModal);
-    $('#recipe-modal').removeAttribute('hidden');
-    document.body.style.overflow = 'hidden';
-    if (window.lucide) lucide.createIcons();
+    $('#recipe-modal').hidden = false;
+    ScrollLock.lock();
+    Buy.refresh();
+    icons();
   },
 
   closeModal() {
-    $('#recipe-modal').setAttribute('hidden', '');
-    document.body.style.overflow = '';
+    $('#recipe-modal').hidden = true;
+    ScrollLock.unlock();
   }
 };
 
 
 /* =====================================================================
-   CART DRAWER UI
+   TOAST — small "Added to cart" message
+   ===================================================================== */
+const Toast = {
+  timer: null,
+  show(text) {
+    const el = $('#toast');
+    el.innerHTML = `<i data-lucide="circle-check"></i><span>${text}</span>`;
+    el.hidden = false;
+    el.classList.remove('is-leaving');
+    icons();
+    clearTimeout(Toast.timer);
+    Toast.timer = setTimeout(() => {
+      el.classList.add('is-leaving');
+      setTimeout(() => { el.hidden = true; }, 250);
+    }, 1800);
+  }
+};
+
+
+/* =====================================================================
+   CART DRAWER + sticky cart bar
    ===================================================================== */
 const CartUI = {
   init() {
     $('#cart-close').addEventListener('click', () => Cart.close());
     $('#cart-backdrop').addEventListener('click', () => Cart.close());
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') Cart.close(); });
-
     $('#checkout-btn').addEventListener('click', () => CartUI.checkout());
+    $('#cart-empty-shop').addEventListener('click', () => {
+      Cart.close();
+      $('#collection').scrollIntoView({ behavior: 'smooth' });
+    });
+    $('#cart-bar-open').addEventListener('click', () => Cart.open());
+    $('#cart-bar-checkout').addEventListener('click', () => CartUI.checkout());
+
+    // Quantity + remove buttons inside the drawer (one delegated listener)
+    $('#cart-items').addEventListener('click', (e) => {
+      const inc = e.target.closest('[data-qty-inc]');
+      const dec = e.target.closest('[data-qty-dec]');
+      const rem = e.target.closest('[data-cart-remove]');
+      if (inc) Cart.updateQuantity(inc.dataset.qtyInc, Cart.qty(inc.dataset.qtyInc) + 1);
+      if (dec) Cart.updateQuantity(dec.dataset.qtyDec, Cart.qty(dec.dataset.qtyDec) - 1);
+      if (rem) Cart.remove(rem.dataset.cartRemove);
+    });
+    $('#cart-upsell').addEventListener('click', (e) => {
+      const add = e.target.closest('[data-upsell-add]');
+      if (add) { Cart.add(window.getProductById(add.dataset.upsellAdd)); Cart.dismissUpsell(); }
+      if (e.target.closest('[data-upsell-dismiss]')) Cart.dismissUpsell();
+    });
 
     CartUI.render();
   },
 
   render() {
     const totals = Cart.totals();
+    const cfg = window.CONFIG;
+    const isEmpty = Cart.items.length === 0;
+    const itemsText = totals.totalItems + ' item' + (totals.totalItems === 1 ? '' : 's');
 
-    // Header badge (in nav)
+    // Header badge
     const badge = $('#cart-badge');
-    if (totals.totalItems > 0) {
-      badge.textContent = totals.totalItems;
-      badge.removeAttribute('hidden');
-    } else {
-      badge.setAttribute('hidden', '');
-    }
+    badge.textContent = totals.totalItems;
+    badge.hidden = totals.totalItems === 0;
     $('#cart-count-pill').textContent = totals.totalItems;
 
     // Drawer open/close
-    const drawer   = $('#cart-drawer');
-    const backdrop = $('#cart-backdrop');
-    if (Cart.isOpen) {
-      drawer.removeAttribute('hidden');
-      backdrop.removeAttribute('hidden');
-      document.body.style.overflow = 'hidden';
-    } else {
-      drawer.setAttribute('hidden', '');
-      backdrop.setAttribute('hidden', '');
-      document.body.style.overflow = '';
-    }
+    $('#cart-drawer').hidden   = !Cart.isOpen;
+    $('#cart-backdrop').hidden = !Cart.isOpen;
+    if (Cart.isOpen) ScrollLock.lock(); else ScrollLock.unlock();
 
-    // Empty state vs items
-    const isEmpty = Cart.items.length === 0;
-    $('#cart-empty').style.display = isEmpty ? 'flex' : 'none';
+    // Sticky bottom bar (cart has items) vs floating WhatsApp button (empty cart)
+    $('#cart-bar').hidden = isEmpty;
+    $('#wa-float').hidden = !isEmpty;
+    document.body.classList.toggle('has-cart-bar', !isEmpty);
+    $('#cart-bar-count').textContent = itemsText;
+    $('#cart-bar-total').textContent = window.formatPrice(totals.total);
 
-    // Upsell banner
+    // Empty state
+    $('#cart-empty').hidden = !isEmpty;
+
+    // Items
+    $('#cart-items').innerHTML = Cart.items.map(({ product, quantity }) => `
+      <div class="cart-item">
+        <img src="${product.images[0]}" alt="" width="60" height="90" />
+        <div class="cart-item-body">
+          <h4>${product.name}</h4>
+          <p class="cart-item-sku">${window.sizeLabel(product)} · ${window.formatPrice(product.price)} each</p>
+          <div class="cart-qty">
+            <button type="button" data-qty-dec="${product.id}" aria-label="Remove one ${product.name}"><i data-lucide="minus"></i></button>
+            <span>${quantity}</span>
+            <button type="button" data-qty-inc="${product.id}" aria-label="Add one more ${product.name}"><i data-lucide="plus"></i></button>
+          </div>
+        </div>
+        <div class="cart-item-right">
+          <span class="cart-item-price">${window.formatPrice(product.price * quantity)}</span>
+          <button type="button" class="cart-item-remove" data-cart-remove="${product.id}" aria-label="Remove ${product.name}"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+    `).join('');
+
+    // "Pairs well with" suggestion
     const upsellEl = $('#cart-upsell');
-    if (!isEmpty && Cart.upsellProduct) {
-      const u = Cart.upsellProduct;
+    const u = Cart.upsellProduct;
+    if (!isEmpty && u) {
       upsellEl.innerHTML = `
         <div class="cart-upsell-inner">
-          <i data-lucide="sparkles"></i>
           <div class="cart-upsell-body">
             <p class="cart-upsell-title">Pairs well with</p>
             <div class="cart-upsell-row">
-              <img src="${u.images[0]}" alt="${u.name}" />
-              <div class="info">
-                <p>${u.name}</p>
-                <p>${window.formatPrice(u.price)}</p>
-              </div>
-              <button class="cart-upsell-add" data-upsell-add="${u.id}">Add</button>
+              <img src="${u.images[0]}" alt="" width="40" height="60" />
+              <div class="info"><p>${u.name}</p><p>${window.sizeLabel(u)} · ${window.formatPrice(u.price)}</p></div>
+              <button type="button" class="cart-upsell-add" data-upsell-add="${u.id}">Add</button>
             </div>
           </div>
-          <button class="cart-upsell-dismiss" data-upsell-dismiss aria-label="Dismiss"><i data-lucide="x"></i></button>
-        </div>
-      `;
-      upsellEl.removeAttribute('hidden');
-      upsellEl.querySelector('[data-upsell-add]').addEventListener('click', () => {
-        Cart.add(u);
-        Cart.dismissUpsell();
-      });
-      upsellEl.querySelector('[data-upsell-dismiss]').addEventListener('click', () => Cart.dismissUpsell());
+          <button type="button" class="cart-upsell-dismiss" data-upsell-dismiss aria-label="Hide suggestion"><i data-lucide="x"></i></button>
+        </div>`;
+      upsellEl.hidden = false;
     } else {
-      upsellEl.setAttribute('hidden', '');
+      upsellEl.hidden = true;
       upsellEl.innerHTML = '';
     }
 
-    // Items
-    const itemsEl = $('#cart-items');
-    itemsEl.innerHTML = '';
-    Cart.items.forEach(({ product, quantity }) => {
-      const row = document.createElement('div');
-      row.className = 'cart-item';
-      row.innerHTML = `
-        <img src="${product.images[0]}" alt="${product.name}" />
-        <div class="cart-item-body">
-          <h4>${product.name}</h4>
-          <p class="cart-item-sku">${window.sizeLabel(product)} · ${product.sku}</p>
-          <p class="cart-item-price">${window.formatPrice(product.price)}</p>
-          <div class="cart-qty">
-            <button data-qty-dec="${product.id}" aria-label="Decrease"><i data-lucide="minus"></i></button>
-            <span>${quantity}</span>
-            <button data-qty-inc="${product.id}" aria-label="Increase"><i data-lucide="plus"></i></button>
-          </div>
-        </div>
-        <button class="cart-item-remove" data-cart-remove="${product.id}" aria-label="Remove"><i data-lucide="x"></i></button>
-      `;
-      itemsEl.appendChild(row);
-    });
+    // Footer: free-delivery progress, discount, totals
+    $('#cart-footer').hidden = isEmpty;
+    if (!isEmpty) {
+      const afterDiscount = totals.total;
+      const need = cfg.freeShippingThreshold - afterDiscount;
+      $('#ship-progress-text').innerHTML = need > 0
+        ? `Add <strong>${window.formatPrice(need)}</strong> more for <strong>FREE delivery</strong>`
+        : `🎉 You get <strong>FREE delivery</strong>`;
+      $('#ship-bar-fill').style.width = Math.min(100, (afterDiscount / cfg.freeShippingThreshold) * 100) + '%';
 
-    // Bind quantity & remove buttons via delegation (replace listener)
-    itemsEl.querySelectorAll('[data-qty-inc]').forEach(b =>
-      b.addEventListener('click', () => {
-        const id = b.dataset.qtyInc;
-        const item = Cart.items.find(i => i.product.id === id);
-        if (item) Cart.updateQuantity(id, item.quantity + 1);
-      })
-    );
-    itemsEl.querySelectorAll('[data-qty-dec]').forEach(b =>
-      b.addEventListener('click', () => {
-        const id = b.dataset.qtyDec;
-        const item = Cart.items.find(i => i.product.id === id);
-        if (item) Cart.updateQuantity(id, item.quantity - 1);
-      })
-    );
-    itemsEl.querySelectorAll('[data-cart-remove]').forEach(b =>
-      b.addEventListener('click', () => Cart.remove(b.dataset.cartRemove))
-    );
-
-    // Footer (summary + checkout)
-    const footer = $('#cart-footer');
-    if (isEmpty) {
-      footer.setAttribute('hidden', '');
-    } else {
-      footer.removeAttribute('hidden');
       $('#cart-subtotal').textContent = window.formatPrice(totals.subtotal);
       $('#cart-total').textContent    = window.formatPrice(totals.total);
-      if (totals.discount > 0) {
-        $('#cart-discount-row').removeAttribute('hidden');
+      const hasDiscount = totals.discount > 0;
+      $('#cart-discount-row').hidden = !hasDiscount;
+      $('#cart-discount-badge').hidden = !hasDiscount;
+      if (hasDiscount) {
+        const mb = cfg.multiBuy;
         $('#cart-discount').textContent = '-' + window.formatPrice(totals.discount);
-        const badge = $('#cart-discount-badge');
-        badge.removeAttribute('hidden');
-        badge.innerHTML = `<i data-lucide="tag"></i><span>Combo discount applied! You saved ${window.formatPrice(totals.discount)}</span>`;
-      } else {
-        $('#cart-discount-row').setAttribute('hidden', '');
-        $('#cart-discount-badge').setAttribute('hidden', '');
+        $('#cart-discount-badge').innerHTML = `<i data-lucide="tag"></i><span>${mb.percent}% off for ${mb.minItems}+ pouches — you saved ${window.formatPrice(totals.discount)}</span>`;
       }
     }
 
-    if (window.lucide) lucide.createIcons();
+    Buy.refresh();
+    icons();
   },
 
-  // The cart's "Proceed to Checkout" button just opens the checkout modal.
   checkout() {
     if (Cart.items.length === 0) return;
     Cart.close();
@@ -874,41 +654,41 @@ const CartUI = {
 
 
 /* =====================================================================
-   CHECKOUT — form, pincode lookup, tax + shipping, WhatsApp order
+   CHECKOUT — form, pincode lookup, totals, WhatsApp order
    ===================================================================== */
 const Checkout = {
+  lastUrl: '',
+
   init() {
     $('#checkout-modal-close').addEventListener('click', () => Checkout.close());
     $('.checkout-backdrop', $('#checkout-modal')).addEventListener('click', () => Checkout.close());
     $('#checkout-form').addEventListener('submit', (e) => Checkout.submit(e));
     $('#co-pincode').addEventListener('input', () => Checkout.onPincodeChange());
+    // Keep only digits in the phone + pincode boxes
+    ['#co-phone', '#co-pincode'].forEach(sel => $(sel).addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    }));
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !$('#checkout-modal').hasAttribute('hidden')) Checkout.close();
-    });
-
-    // Order confirmation modal close
-    $('#confirm-done').addEventListener('click', () => {
-      $('#order-confirm-modal').setAttribute('hidden', '');
-      document.body.style.overflow = '';
-    });
-    $('.checkout-backdrop', $('#order-confirm-modal')).addEventListener('click', () => {
-      $('#order-confirm-modal').setAttribute('hidden', '');
-      document.body.style.overflow = '';
-    });
+    const closeConfirm = () => {
+      $('#order-confirm-modal').hidden = true;
+      Cart.clear();              // the order was handed to WhatsApp, so start fresh
+      ScrollLock.unlock();
+    };
+    $('#confirm-done').addEventListener('click', closeConfirm);
+    $('.checkout-backdrop', $('#order-confirm-modal')).addEventListener('click', closeConfirm);
   },
 
   open() {
     Checkout.render();
-    $('#checkout-modal').removeAttribute('hidden');
-    document.body.style.overflow = 'hidden';
+    $('#checkout-modal').hidden = false;
+    ScrollLock.lock();
   },
   close() {
-    $('#checkout-modal').setAttribute('hidden', '');
-    document.body.style.overflow = '';
+    $('#checkout-modal').hidden = true;
+    ScrollLock.unlock();
   },
 
-  // Returns totals broken down: subtotal, comboDiscount, shipping, gst, total.
+  // Returns totals: subtotal, comboDiscount, shipping, gst, total.
   // Product prices are MRP, which by law already INCLUDES GST — so `gst` is
   // the portion of the total that is tax, shown for information only.
   totals() {
@@ -926,11 +706,9 @@ const Checkout = {
   },
 
   render() {
-    // List the items
-    const itemsEl = $('#checkout-items');
-    itemsEl.innerHTML = Cart.items.map(({ product, quantity }) => `
+    $('#checkout-items').innerHTML = Cart.items.map(({ product, quantity }) => `
       <div class="checkout-item">
-        <img src="${product.images[0]}" alt="${product.name}" />
+        <img src="${product.images[0]}" alt="" width="40" height="60" />
         <div class="checkout-item-info">
           <div class="checkout-item-name">${product.name} (${window.sizeLabel(product)})</div>
           <div class="checkout-item-qty">Qty ${quantity} × ${window.formatPrice(product.price)}</div>
@@ -938,29 +716,28 @@ const Checkout = {
         <div class="checkout-item-price">${window.formatPrice(product.price * quantity)}</div>
       </div>
     `).join('');
-
     Checkout.recalc();
   },
 
   recalc() {
     const t = Checkout.totals();
+    const cfg = window.CONFIG;
     $('#co-subtotal').textContent = window.formatPrice(t.subtotal);
     $('#co-gst').textContent      = window.formatPrice(t.gst);
     $('#co-total').textContent    = window.formatPrice(t.total);
 
+    $('#co-discount-row').hidden = !(t.comboDiscount > 0);
     if (t.comboDiscount > 0) {
-      $('#co-discount-row').removeAttribute('hidden');
+      $('#co-discount-label').textContent = `${cfg.multiBuy.percent}% off (${cfg.multiBuy.minItems}+ pouches)`;
       $('#co-discount').textContent = '-' + window.formatPrice(t.comboDiscount);
-    } else {
-      $('#co-discount-row').setAttribute('hidden', '');
     }
 
     if (t.shipping === 0) {
       $('#co-shipping').textContent = 'FREE';
-      $('#co-shipping-label').textContent = 'Shipping (free over ₹' + window.CONFIG.freeShippingThreshold + ')';
+      $('#co-shipping-label').textContent = 'Delivery';
     } else {
       $('#co-shipping').textContent = window.formatPrice(t.shipping);
-      $('#co-shipping-label').textContent = 'Shipping';
+      $('#co-shipping-label').textContent = 'Delivery (free over ' + window.formatPrice(cfg.freeShippingThreshold) + ')';
     }
   },
 
@@ -969,7 +746,11 @@ const Checkout = {
     const status = $('#co-pincode-status');
 
     if (pin.length === 0) { status.textContent = ''; status.className = 'checkout-pincode-status'; return; }
-    if (!/^[1-9][0-9]{5}$/.test(pin)) { status.textContent = 'Enter a valid 6-digit pincode'; status.className = 'checkout-pincode-status err'; return; }
+    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+      status.textContent = pin.length < 6 ? '' : 'Enter a valid 6-digit pincode';
+      status.className = 'checkout-pincode-status err';
+      return;
+    }
 
     const match = window.PINCODES[pin];
     if (match) {
@@ -986,7 +767,12 @@ const Checkout = {
   submit(e) {
     e.preventDefault();
     const form = e.target;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      const bad = form.querySelector(':invalid');
+      if (bad) bad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
     const fd = new FormData(form);
     const customer = {
@@ -1002,7 +788,6 @@ const Checkout = {
 
     const t = Checkout.totals();
     const orderId = 'ROH' + Date.now().toString(36).toUpperCase();
-
     const order = {
       orderId,
       placedAt: new Date().toISOString(),
@@ -1014,32 +799,27 @@ const Checkout = {
       status: 'placed_via_whatsapp'
     };
 
-    // Save to localStorage as a poor-man's order log (so you have a record on
-    // this device even before a real backend exists). Real production should
-    // POST this to a server.
+    // Keep a copy on this device (there is no server-side order log yet)
     try {
       const all = JSON.parse(localStorage.getItem('rohilla-orders') || '[]');
       all.push(order);
       localStorage.setItem('rohilla-orders', JSON.stringify(all));
     } catch (e) { /* ignore quota */ }
 
-    // Build the WhatsApp message
     const msg = Checkout.buildWhatsappMessage(order);
     const url = 'https://wa.me/' + window.CONFIG.whatsappNumber + '?text=' + encodeURIComponent(msg);
+    Checkout.lastUrl = url;
 
-    // Open WhatsApp in a new tab. Popup blockers may stop this — that's why we
-    // also show a confirmation modal with a copy-paste fallback.
+    // Open WhatsApp. The confirmation screen also has a button + copy-paste
+    // fallback in case the phone blocks the pop-up.
     window.open(url, '_blank');
 
-    // Show the confirmation modal (with fallback text)
     $('#confirm-order-id').textContent = orderId;
     $('#confirm-fallback-text').value = msg;
+    $('#confirm-open-wa').href = url;
     Checkout.close();
-    Cart.clear();
-    $('#order-confirm-modal').removeAttribute('hidden');
-    document.body.style.overflow = 'hidden';
-
-    if (window.lucide) lucide.createIcons();
+    $('#order-confirm-modal').hidden = false;
+    ScrollLock.lock();
   },
 
   buildWhatsappMessage(order) {
@@ -1056,8 +836,8 @@ const Checkout = {
     lines.push('');
     lines.push('*Bill:*');
     lines.push('Subtotal: ' + window.formatPrice(t.subtotal));
-    if (t.comboDiscount > 0) lines.push('Combo discount: -' + window.formatPrice(t.comboDiscount));
-    lines.push('Shipping: ' + (t.shipping === 0 ? 'FREE' : window.formatPrice(t.shipping)));
+    if (t.comboDiscount > 0) lines.push('Discount (' + cfg.multiBuy.percent + '% off ' + cfg.multiBuy.minItems + '+ pouches): -' + window.formatPrice(t.comboDiscount));
+    lines.push('Delivery: ' + (t.shipping === 0 ? 'FREE' : window.formatPrice(t.shipping)));
     lines.push('*TOTAL: ' + window.formatPrice(t.total) + '*');
     lines.push('(includes GST ' + Math.round(cfg.gstRate * 100) + '%: ' + window.formatPrice(t.gst) + ')');
     lines.push('');
@@ -1076,82 +856,33 @@ const Checkout = {
 
 
 /* =====================================================================
-   GENERIC "REVEAL ON SCROLL" — uses IntersectionObserver
-   Applies to any element with the .reveal class (and the auto-built
-   product/recipe/gallery cards, since they have their own classes).
+   ESC key closes whatever is open (top-most first)
    ===================================================================== */
-const Reveal = {
-  init() {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('is-visible');
-          io.unobserve(e.target);
-        }
-      });
-    }, { rootMargin: '0px 0px -100px 0px', threshold: 0.05 });
-
-    $$('.reveal, .feature-card, .product-card, .gallery-item, .recipe-card').forEach(el => io.observe(el));
-  }
-};
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (!$('#recipe-modal').hidden) return Recipes.closeModal();
+  if (!$('#checkout-modal').hidden) return Checkout.close();
+  if (Cart.isOpen) return Cart.close();
+  if (!$('#mobile-menu').hidden) return Nav.closeMobile();
+});
 
 
 /* =====================================================================
-   LENIS — buttery smooth scrolling (optional; degrades gracefully)
+   BOOT
    ===================================================================== */
-const Smooth = {
-  init() {
-    // Lenis exposes itself a couple of different ways depending on bundle version
-    const LenisCtor = window.Lenis || (window.lenis && window.lenis.Lenis);
-    if (!LenisCtor) return;
-    const lenis = new LenisCtor({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      touchMultiplier: 2
-    });
-
-    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
-
-    // Keep GSAP ScrollTrigger in sync
-    if (window.ScrollTrigger) lenis.on('scroll', ScrollTrigger.update);
-  }
-};
-
-
-/* =====================================================================
-   BOOT — run everything once the DOM is ready
-   ===================================================================== */
-function preloadCriticalImages() {
-  const urls = [
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
-    'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80',
-    'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80'
-  ];
-  urls.forEach(u => { const i = new Image(); i.src = u; });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  preloadCriticalImages();
-
   Cart.load();
 
   Branding.init();
   Nav.init();
   Hero.init();
-  Engineering.init();
+  ComboSpot.init();
   Collection.init();
-  Gallery.init();
-  ComboUI.init();
+  Engineering.init();
   Recipes.init();
+  Buy.init();
   CartUI.init();
   Checkout.init();
-  Reveal.init();
-  Smooth.init();
 
-  // Render all the lucide icons we inserted as <i data-lucide="..."></i>
-  if (window.lucide) lucide.createIcons();
+  icons();
 });

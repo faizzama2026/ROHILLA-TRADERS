@@ -15,21 +15,35 @@ Marketing strategy and brand context live in `F:\ROHILLA MARKETING` (see its CLA
 ## File map
 | File | What it holds |
 |---|---|
-| `data.js` | **Edit this first.** `CONFIG` (WhatsApp, email, address, FSSAI, GSTIN, GST rate, shipping, trust badges, Instagram), `PRODUCTS`, `RECIPES`, `GALLERY`, `ENGINEERING_FEATURES`, `PINCODES`, helpers |
-| `index.html` | Page layout: nav, hero, engineering x-ray, collection, gallery, combo builder, recipes, footer, cart drawer, checkout + confirm + recipe modals |
-| `app.js` | Behaviour: `Branding`, `Nav`, `Hero`, `Engineering`, `Collection`, `Gallery`, `ComboUI`, `Recipes`, `CartUI`, `Checkout` (totals, pincode, WhatsApp message), `Reveal`, `Smooth` |
-| `styles.css` | All styling. Tokens at top: matte black `#0a0a0a`, gold `#BF953F`/`#FCF6BA`/`#B38728`, Playfair Display + Inter |
+| `data.js` | **Edit this first.** `CONFIG` (WhatsApp, email, address, FSSAI, GSTIN, GST rate, shipping, `multiBuy` discount, trust chips, Instagram), `PRODUCTS`, `RECIPES`, `ENGINEERING_FEATURES`, `PINCODES`, helpers (`getUpsellProduct`, `sizeLabel`) |
+| `index.html` | Page order (mobile-first): header → hero (real pouches) → **Chef Special Combo** → Shop grid → How to Order → Why Rohilla → Recipes → footer. Plus sticky cart bar, floating WhatsApp button, toast, cart drawer, checkout, confirm and recipe pop-ups |
+| `app.js` | `Branding`, `Cart`, `Buy` (Add → − n + stepper everywhere), `Nav`, `Hero`, `ComboSpot`, `Collection`, `Engineering`, `Recipes`, `Toast`, `CartUI` (drawer, cart bar, free-delivery bar), `Checkout` (totals, pincode, WhatsApp message) |
+| `styles.css` | All styling, **mobile-first** (phone portrait is default; `min-width` media queries add tablet/desktop). Tokens at top: matte black `#0a0a0a`, gold `#BF953F`/`#FCF6BA`/`#B38728`, Playfair Display + Inter |
+| `img/` | Optimised WebP product images (~50–130 KB each), made from `rohilla images/` with Python/Pillow: `<product>-100/-50.webp` (500w), `haldi/dhaniya/lal-mirch.webp` (360w), `chef-combo.webp` + `chef-combo-wide.webp` (composites), `hero-pouches.webp` (transparent fan), `og-image.jpg` (1200×630 share preview) |
+| `rohilla images/` | Original ~3 MB label PNGs from the founders. **Not published** (in `.assetsignore`) |
 | `legal/*.html` | Privacy, Terms, Shipping, Refund. They read contact/FSSAI/GSTIN from `CONFIG` via `data-*` spans |
 | `.assetsignore` | Files kept off the public site |
 
-CDN libraries: lucide (unpkg), GSAP + ScrollTrigger, Lenis (jsdelivr), Google Fonts.
+CDN libraries: lucide icons (unpkg, `defer`), Google Fonts. GSAP and Lenis were removed on 12 Sep 2026 for speed.
+**Cache-busting:** `index.html` loads `styles.css?v=N`, `data.js?v=N`, `app.js?v=N`. Bump `N` after every change so phones don't show a stale version.
+Lucide replaces `<i data-lucide>` with `<svg class="lucide">`, so size icons with `svg.lucide` selectors (not `i`).
+
+## Catalogue (12 Sep 2026)
+| Product | Sizes / price |
+|---|---|
+| Tandoori Chicken, Nihari, Biryani Masala | 100 g ₹170 · 50 g MRP ₹99, offer ₹88 |
+| Kebab Masala | 100 g ₹170 (a 50 g label exists but is not sold) |
+| Garam Masala | 100 g MRP ₹150, offer ₹130 (stock photo, no pack image yet) |
+| Chaat Masala | 100 g ₹99 (stock photo, no pack image yet) |
+| Chef Special Combo (`prod_008`) | Haldi + Dhaniya + Lal Mirch, 3 × 100 g, MRP ₹250, offer ₹220 |
+Curry Masala was removed (not in the catalogue). Sizes of one product share a `group` → one card with a size switch. `CONFIG.multiBuy` = 10% off 3+ pouches (template default, still to be confirmed by the founders).
 
 ## Business facts (from certificates, verified 11 Sep 2026)
 - Legal name **M/S Rohilla Traders**, a **partnership** of Faiz Zama and Mohd Musab (both Partners). Grievance officer: Faiz Zama, Partner.
 - Address: 14/15 Masjid Domani, Quilla, Bareilly, Uttar Pradesh 243001
 - **FSSAI** State licence `12726009000155`, repacker / general manufacturing, valid to **02-05-2027** (renewal window opens 04-11-2026). Licensed categories: Lal Mirch, Dhaniya, Haldi, Curry Powder, Amchur, Mixed Masala. Don't add products outside these without a licence modification.
 - **GSTIN** `09ABNFR2257C1Z3`
-- Email `rohillatraders25@gmail.com` · WhatsApp/phone `+91 9997055377`
+- Email `rohillatraders25@gmail.com` · WhatsApp/phone `+91 8218602698` (changed 12 Sep 2026)
 - Instagram `@rohillaspices`
 
 ## Rules. These matter legally.
@@ -42,16 +56,18 @@ CDN libraries: lucide (unpkg), GSAP + ScrollTrigger, Lenis (jsdelivr), Google Fo
 7. Never put personal data from licence PDFs (Aadhaar, personal mobiles, personal emails) on the site.
 
 ## Test locally
-`.claude/launch.json` in `F:\ROHILLA MARKETING` defines **`rohilla-site`**: `python -m http.server 8765` serving this folder. Start it with the Browser pane's `preview_start`, then check:
+`.claude/launch.json` in `F:\ROHILLA MARKETING` defines **`rohilla-site`**: `python -m http.server 8765` serving this folder. Start it with the Browser pane's `preview_start`.
+For true phone screenshots (375 px, touch, mobile UA) drive headless Edge over DevTools with Node 24's built-in WebSocket (`Emulation.setDeviceMetricsOverride`). Desktop Edge won't lay out below ~500 px, so plain `--window-size` isn't enough. Check:
 - console has no errors; `node --check data.js app.js` passes
-- checkout math, e.g. 1 × Kebab ₹249 → shipping ₹49 → **total ₹298**, of which GST ₹14
+- checkout math, e.g. 1 × Tandoori 50 g ₹88 + Chef Combo ₹220 → delivery ₹49 → **total ₹357**, GST ₹17 inside
+- Add → stepper → sticky cart bar → drawer → checkout → WhatsApp message goes to 918218602698
 - footer shows FSSAI + GSTIN; legal pages fill from `CONFIG`
 
 A backup of the pre-11-Sep version was kept in the Claude scratchpad (session-only).
 
 ## Open items
-- **Real photos:** every image is Unsplash stock, including the hero "pouch". Replace with real photos of the black pouch.
-- **Product list and prices:** the site lists Kebab ₹249, Tandoori ₹229, Biryani ₹269, Nihari ₹289, Garam ₹199, Curry ₹219 (100 g). The Instagram pouch art shows a **50 g Tandoori at MRP ₹99 / ₹88**. Confirm the real sizes and MRPs, and consider adding Haldi, Lal Mirch and Dhaniya.
+- **Pack images:** Garam and Chaat Masala still use stock photos. Recipe photos are Unsplash. The label art says "Trusted by generations" and uses a placeholder barcode `8906123456789`; real GS1 barcodes are needed before marketplaces.
+- **Multi-buy 10% off 3+ pouches:** confirm the founders want it (it also stacks on the combo and 50 g offer prices). Set `CONFIG.multiBuy.percent = 0` to turn it off.
 - COD availability and the ₹30 COD fee, and free shipping ≥ ₹500: confirm policy (they appear in `legal/shipping.html` and `CONFIG`).
-- Razorpay button is disabled ("coming soon") and needs a backend. `CONFIG.razorpayKeyId` is a placeholder.
+- Online payment: the Razorpay button was removed from checkout (needs a backend). `CONFIG.razorpayKeyId` is a placeholder.
 - Orders are only logged to the customer's `localStorage` plus the WhatsApp message. There is no server-side order record.

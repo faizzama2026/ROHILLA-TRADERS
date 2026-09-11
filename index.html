@@ -2,53 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ROHILLA - Premium Indian Spices</title>
   <meta name="description" content="Rohilla Spices — pure spices and masalas blended and packed in Bareilly. Tandoori, Kebab, Nihari and Biryani masala with no added colour and no preservatives. Order on WhatsApp." />
   <meta name="theme-color" content="#0a0a0a" />
   <link rel="canonical" href="https://rohillatraders.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="ROHILLA — Zayka Rohilkhand Ka" />
-  <meta property="og:description" content="Pure spices and masalas from Bareilly. No added colour, no preservatives." />
+  <meta property="og:description" content="Pure spices and masalas from Bareilly. No added colour, no preservatives. Order on WhatsApp." />
   <meta property="og:url" content="https://rohillatraders.com/" />
-  <meta property="og:image" content="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1200&q=80" />
+  <meta property="og:image" content="https://rohillatraders.com/img/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' text-anchor='middle' fill='%23BF953F'%3ER%3C/text%3E%3C/svg%3E" />
 
   <!--
     HOW THIS WEBSITE IS ORGANISED — read this once:
-      data.js     → ALL your products, recipes, gallery photos, prices.
+      data.js     → ALL your products, recipes, prices and business details.
                     This is the file to edit when you want to change content.
-      styles.css  → How everything looks (colours, spacing, animations).
-      app.js      → How everything behaves (cart, scroll, animations, etc).
-      index.html  → This file. The page layout, broken into commented
-                    sections you can find easily.
+      img/        → Product photos (small WebP files, made from "rohilla images").
+      styles.css  → How everything looks. Written mobile-first.
+      app.js      → How everything behaves (cart, checkout, WhatsApp order).
+      index.html  → This file. The page layout, in commented sections.
 
-    EXTERNAL LIBRARIES (loaded from internet — no install needed):
-      • Google Fonts (Playfair Display + Inter)
-      • Lucide icons       — pretty SVG icons
-      • GSAP + ScrollTrigger — scroll-linked animations (x-ray reveal)
-      • Lenis              — buttery smooth scrolling
-      • Razorpay checkout  — loaded on demand when user clicks "Checkout"
+    After editing styles.css / data.js / app.js, bump the ?v= number on the
+    <link>/<script> tags below so visitors' phones load the new version.
+
+    EXTERNAL LIBRARIES: Google Fonts (Playfair Display + Inter), Lucide icons.
   -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="preload" as="image" href="img/hero-pouches.webp" type="image/webp" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
 
   <!-- =================================================================
-       SECTION 1 — NAVIGATION (top bar)
-       Links live in app.js inside the NAV_LINKS array.
-       Logo text is right here in the HTML.
+       NAVIGATION (top bar). Menu items live in app.js → NAV_LINKS.
        ================================================================= -->
   <header id="site-header" class="site-header">
     <div class="nav-inner">
-      <a href="#" class="nav-logo gold-gradient">ROHILLA</a>
+      <a href="#top" class="nav-logo gold-gradient">ROHILLA</a>
 
-      <nav class="nav-links" id="nav-links">
+      <nav class="nav-links" id="nav-links" aria-label="Main">
         <!-- Filled by app.js -->
       </nav>
 
@@ -58,7 +57,7 @@
           <span id="cart-badge" class="cart-badge" hidden>0</span>
         </button>
 
-        <button id="mobile-menu-toggle" class="icon-button mobile-only" aria-label="Toggle menu">
+        <button id="mobile-menu-toggle" class="icon-button mobile-only" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
           <i data-lucide="menu" id="menu-open-icon"></i>
           <i data-lucide="x" id="menu-close-icon" hidden></i>
         </button>
@@ -68,173 +67,82 @@
 
   <!-- Mobile full-screen menu (toggled by app.js) -->
   <div id="mobile-menu" class="mobile-menu" hidden>
-    <nav id="mobile-nav-links" class="mobile-nav-links"></nav>
+    <nav id="mobile-nav-links" class="mobile-nav-links" aria-label="Mobile"></nav>
   </div>
 
 
-  <main>
+  <main id="top">
 
     <!-- ===============================================================
-         SECTION 2 — HERO
-         The big top section with the headline and the 3D pouch.
-         Edit hero copy and trust-indicator numbers right here.
+         HERO — headline, two buttons and the real pouches.
+         Trust chips come from CONFIG.trustIndicators in data.js.
          =============================================================== -->
     <section class="hero">
       <div class="hero-bg-radial"></div>
       <div id="hero-spotlight" class="hero-spotlight"></div>
 
-      <div class="hero-rays">
-        <div class="hero-ray hero-ray-1"></div>
-        <div class="hero-ray hero-ray-2"></div>
-      </div>
-
       <div class="hero-inner">
         <div class="hero-grid">
-
-          <!-- Left: text -->
           <div class="hero-text">
-            <div class="hero-eyebrow fade-in" style="--fade-delay:0.2s">
+            <div class="hero-eyebrow">
               <i data-lucide="sparkles"></i>
               <span>Zayka Rohilkhand Ka</span>
             </div>
 
-            <h1 class="hero-title fade-in" style="--fade-delay:0.4s">
-              <span class="white">The Art of</span><br />
-              <span class="gold-gradient text-shadow-gold">Perfection</span>
+            <h1 class="hero-title">
+              <span class="white">Pure Masalas</span><br />
+              <span class="gold-gradient">from Bareilly</span>
             </h1>
 
-            <p class="hero-desc fade-in" style="--fade-delay:0.6s">
-              Pure spices and masalas, blended and packed in Bareilly by two engineers.
-              No added colour, no preservatives. Just the real taste of Rohilkhand.
+            <p class="hero-desc">
+              Blended and packed by two engineers. No added colour, no preservatives, and a free scoop in every pouch.
             </p>
 
-            <div class="hero-buttons fade-in" style="--fade-delay:0.8s">
-              <button class="btn btn-gold" data-scroll-to="#collection">
-                <span>Explore Collection</span>
-                <i data-lucide="arrow-right"></i>
-              </button>
-              <button class="btn btn-outline" data-scroll-to="#engineering">
-                The Engineering
-              </button>
+            <div class="hero-buttons">
+              <a href="#collection" class="btn btn-gold">
+                <span>Shop Now</span>
+                <i data-lucide="arrow-down"></i>
+              </a>
+              <a data-whatsapp-link href="#" target="_blank" rel="noopener" class="btn btn-outline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
+                <span>WhatsApp</span>
+              </a>
             </div>
 
-            <!-- Trust indicators — values come from CONFIG.trustIndicators in data.js.
-                 Edit them THERE, not here. Default values are honest defaults for
-                 a brand-new shop (FSSAI / Natural / Made in India). -->
-            <div id="hero-stats" class="hero-stats fade-in" style="--fade-delay:1.2s"></div>
+            <ul id="hero-stats" class="trust-chips" aria-label="Why Rohilla"></ul>
           </div>
 
-          <!-- Right: 3D pouch (tilts with mouse) -->
-          <div class="hero-pouch-wrap">
-            <div id="hero-pouch" class="hero-pouch">
-              <div class="pouch-glow"></div>
-              <div class="pouch-card">
-                <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80" alt="ROHILLA Premium Spice Pouch" />
-                <div class="pouch-overlay"></div>
-                <div class="pouch-logo gold-gradient">ROHILLA</div>
-                <div class="pouch-label">
-                  <div class="pouch-label-name">Kebab Masala</div>
-                  <div class="pouch-label-sub gold-gradient">Premium Blend</div>
-                </div>
-              </div>
-
-              <!-- Floating particles -->
-              <div class="pouch-particles">
-                <div class="particle" style="left:20%; top:30%; --d:3s;   --delay:0s"></div>
-                <div class="particle" style="left:35%; top:50%; --d:3.5s; --delay:0.3s"></div>
-                <div class="particle" style="left:50%; top:70%; --d:4s;   --delay:0.6s"></div>
-                <div class="particle" style="left:65%; top:30%; --d:4.5s; --delay:0.9s"></div>
-                <div class="particle" style="left:80%; top:50%; --d:5s;   --delay:1.2s"></div>
-                <div class="particle" style="left:95%; top:70%; --d:5.5s; --delay:1.5s"></div>
-              </div>
-            </div>
+          <div class="hero-visual">
+            <img src="img/hero-pouches.webp" width="800" height="615" fetchpriority="high"
+                 alt="Rohilla Biryani, Tandoori Chicken and Nihari Masala pouches" />
           </div>
-
         </div>
       </div>
-
-      <div class="hero-bottom-fade"></div>
     </section>
 
 
     <!-- ===============================================================
-         SECTION 3 — ENGINEERING (the "X-ray reveal" section)
-         The pouch fades to a wireframe as you scroll into this section.
-         Feature cards are listed in data.js → ENGINEERING_FEATURES.
+         CHEF SPECIAL COMBO — Haldi + Dhaniya + Lal Mirch.
+         Filled by app.js from the product with id "prod_008" in data.js
+         (name, price, what's inside, photos).
          =============================================================== -->
-    <section id="engineering" class="engineering">
-      <div class="grid-bg"></div>
+    <section id="chef-combo" class="combo-spot" aria-labelledby="combo-spot-title">
       <div class="section-inner">
-
-        <div class="section-header reveal">
-          <span class="eyebrow">Made by Engineers</span>
-          <h2>Engineered for <span class="gold-gradient">Consistency</span></h2>
-          <p>We're two engineers, and we treat masala like a machine part: measured, mixed and sealed the same way every batch, so every pouch tastes like the last one.</p>
-        </div>
-
-        <div class="engineering-grid">
-          <div class="xray-stage">
-            <div id="xray-pouch" class="xray-pouch">
-              <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" alt="ROHILLA Pouch" />
-              <div class="pouch-overlay"></div>
-              <div class="pouch-logo gold-gradient">ROHILLA</div>
-            </div>
-
-            <div id="xray-wireframe" class="xray-wireframe" style="opacity:0">
-              <svg viewBox="0 0 280 420" fill="none">
-                <rect x="10" y="10" width="260" height="400" rx="12" stroke="rgba(191,149,63,0.6)" stroke-width="1" stroke-dasharray="4 4"/>
-                <rect x="20" y="20" width="240" height="380" rx="8" stroke="rgba(191,149,63,0.3)" stroke-width="0.5"/>
-                <ellipse cx="140" cy="340" rx="60" ry="15" stroke="rgba(252,246,186,0.8)" stroke-width="1" fill="rgba(252,246,186,0.1)"/>
-                <line x1="140" y1="325" x2="140" y2="280" stroke="rgba(252,246,186,0.6)" stroke-width="1" stroke-dasharray="2 2"/>
-                <line x1="80"  y1="340" x2="200" y2="340" stroke="rgba(191,149,63,0.4)" stroke-width="0.5"/>
-                <line x1="80"  y1="335" x2="80"  y2="345" stroke="rgba(191,149,63,0.4)" stroke-width="0.5"/>
-                <line x1="200" y1="335" x2="200" y2="345" stroke="rgba(191,149,63,0.4)" stroke-width="0.5"/>
-                <g id="xray-particles"></g>
-              </svg>
-
-              <div class="xray-label xray-label-1" data-reveal="0.5"><div class="dash"></div><span>Matte Stand-Up Pouch</span></div>
-              <div class="xray-label xray-label-2" data-reveal="0.6"><span>Heat Seal</span><div class="dash"></div></div>
-              <div class="xray-label xray-label-3" data-reveal="0.7">
-                <div class="xray-label-3-name">Free Scoop Inside</div>
-                <div class="xray-label-3-sub">In every pouch</div>
-              </div>
-            </div>
-
-            <div class="xray-progress">
-              <span>X-Ray</span>
-              <div class="xray-bar"><div id="xray-bar-fill"></div></div>
-              <span>Reveal</span>
-            </div>
-          </div>
-
-          <div id="engineering-features" class="features-grid">
-            <!-- Filled by app.js from ENGINEERING_FEATURES -->
-          </div>
-        </div>
-
-        <div class="engineering-cta reveal">
-          <p>Every pouch is heat-sealed and printed with its batch number, packing date and best-before date</p>
-          <div class="freshness-badge">
-            <div class="pulse-dot"></div>
-            <span>Batch-Coded Freshness</span>
-          </div>
-        </div>
-
+        <div id="combo-spot" class="combo-spot-card" data-product="prod_008"></div>
       </div>
     </section>
 
 
     <!-- ===============================================================
-         SECTION 4 — PRODUCT COLLECTION
-         Cards are auto-generated from data.js → PRODUCTS.
-         To add/remove a product or change a price, edit data.js — not here.
+         SHOP — one card per product, with a size switch where a product
+         comes in 100g and 50g. Cards are built from data.js → PRODUCTS.
          =============================================================== -->
     <section id="collection" class="collection">
       <div class="section-inner">
-        <div class="section-header reveal">
-          <span class="eyebrow">The Collection</span>
-          <h2>Signature <span class="gold-gradient">Blends</span></h2>
-          <p>Rohilkhand recipes, blended with an engineer's precision. 100% natural ingredients, no added colour, no preservatives.</p>
+        <div class="section-header">
+          <span class="eyebrow">Shop</span>
+          <h2>Our <span class="gold-gradient">Masalas</span></h2>
+          <p>Pick a size and tap <strong>Add</strong>. We confirm every order on WhatsApp.</p>
         </div>
 
         <div id="product-grid" class="product-grid">
@@ -245,69 +153,63 @@
 
 
     <!-- ===============================================================
-         SECTION 5 — GALLERY (visual journey)
-         Photos are listed in data.js → GALLERY.
+         HOW TO ORDER — 3 simple steps
          =============================================================== -->
-    <section class="gallery">
+    <section id="how-to-order" class="how">
       <div class="section-inner">
-        <div class="section-header reveal">
-          <span class="eyebrow">Visual Journey</span>
-          <h2>The <span class="gold-gradient">Gallery</span></h2>
-          <p>The dishes our masalas are made for.</p>
+        <div class="section-header">
+          <span class="eyebrow">Easy Ordering</span>
+          <h2>How to <span class="gold-gradient">Order</span></h2>
         </div>
-        <div id="gallery-grid" class="gallery-grid">
-          <!-- Filled by app.js -->
-        </div>
-      </div>
-    </section>
-
-
-    <!-- ===============================================================
-         SECTION 6 — COMBO BUILDER
-         The 3-item box with 10% discount. Logic in app.js.
-         =============================================================== -->
-    <section id="combo-builder" class="combo">
-      <div class="combo-decoration"></div>
-      <div class="section-inner">
-        <div class="section-header reveal">
-          <span class="eyebrow"><i data-lucide="sparkles"></i> Build Your Own</span>
-          <h2>The <span class="gold-gradient">Combo Builder</span></h2>
-          <p>Mix and match your favorites. Select any 3 pouches and unlock <span class="gold-strong">10% off</span> your entire box.</p>
-        </div>
-
-        <div class="combo-grid">
-          <div class="combo-side">
-            <h3 class="combo-label"><span class="dash"></span> Select Your Spices</h3>
-            <div id="combo-products" class="combo-products"></div>
-          </div>
-
-          <div class="combo-side">
-            <h3 class="combo-label">
-              <span class="dash"></span> Your Box
-              <span id="combo-count" class="combo-count">0/3 items</span>
-            </h3>
-            <div class="combo-box">
-              <div id="combo-empty" class="combo-empty">
-                <div class="combo-empty-icon"><i data-lucide="package"></i></div>
-                <p class="combo-empty-title">Your box is empty</p>
-                <p class="combo-empty-sub">Select 3 spices to unlock 10% off</p>
-              </div>
-
-              <div id="combo-items"></div>
-
-              <div class="combo-progress">
-                <div class="combo-progress-labels">
-                  <span>Progress</span>
-                  <span id="combo-progress-text">3 more needed</span>
-                </div>
-                <div class="combo-progress-bar"><div id="combo-progress-fill"></div></div>
-              </div>
-
-              <div id="combo-summary" class="combo-summary" hidden></div>
-
-              <button id="combo-add-btn" class="btn btn-gold w-full disabled" disabled>Add 0 Items to Cart</button>
-              <button id="combo-clear-btn" class="combo-clear" hidden>Clear Box</button>
+        <ol class="how-steps">
+          <li class="how-step">
+            <span class="how-num">1</span>
+            <div>
+              <h3>Add to cart</h3>
+              <p>Choose your masalas and pack size, then tap Add.</p>
             </div>
+          </li>
+          <li class="how-step">
+            <span class="how-num">2</span>
+            <div>
+              <h3>Enter your address</h3>
+              <p>Name, phone and delivery address. Takes under a minute.</p>
+            </div>
+          </li>
+          <li class="how-step">
+            <span class="how-num">3</span>
+            <div>
+              <h3>Confirm on WhatsApp</h3>
+              <p>Your order opens in WhatsApp. We confirm it and share the delivery date.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="how-note">Free delivery on orders of <strong data-free-ship>₹500</strong> or more.</p>
+      </div>
+    </section>
+
+
+    <!-- ===============================================================
+         WHY ROHILLA — the four TRUE "engineered" points.
+         Cards are listed in data.js → ENGINEERING_FEATURES.
+         =============================================================== -->
+    <section id="engineering" class="engineering">
+      <div class="grid-bg"></div>
+      <div class="section-inner">
+        <div class="section-header">
+          <span class="eyebrow">Made by Engineers</span>
+          <h2>Engineered for <span class="gold-gradient">Consistency</span></h2>
+          <p>We're two engineers, and we treat masala like a machine part: measured, mixed and sealed the same way every batch, so every pouch tastes like the last one.</p>
+        </div>
+
+        <div id="engineering-features" class="features-grid">
+          <!-- Filled by app.js from ENGINEERING_FEATURES -->
+        </div>
+
+        <div class="engineering-cta">
+          <div class="freshness-badge">
+            <div class="pulse-dot"></div>
+            <span>Batch-coded · Heat-sealed · Free scoop inside</span>
           </div>
         </div>
       </div>
@@ -315,13 +217,12 @@
 
 
     <!-- ===============================================================
-         SECTION 7 — RECIPES
-         Cards auto-generated from data.js → RECIPES.
-         Clicking a card opens a modal (handled in app.js).
+         RECIPES — swipe sideways on phones. Cards from data.js → RECIPES.
+         Tapping a card opens the full recipe.
          =============================================================== -->
     <section id="recipes" class="recipes">
       <div class="section-inner">
-        <div class="section-header reveal">
+        <div class="section-header">
           <span class="eyebrow">The Kitchen</span>
           <h2>Signature <span class="gold-gradient">Recipes</span></h2>
           <p>Simple home recipes to get the best out of every pouch.</p>
@@ -336,40 +237,38 @@
 
 
   <!-- ===============================================================
-       SECTION 8 — FOOTER
-       Address / phone / email and the links in the columns are
-       below — edit the text directly here.
+       FOOTER — address / phone / email come from CONFIG in data.js
        =============================================================== -->
   <footer class="footer">
     <div class="section-inner">
       <div class="footer-grid">
 
-        <div class="footer-brand reveal">
+        <div class="footer-brand">
           <span class="footer-logo gold-gradient">ROHILLA</span>
           <p class="footer-tagline">Pure spices and masalas, blended and packed in Bareilly. Zayka Rohilkhand Ka.</p>
-          <!-- Address / phone / email are filled from CONFIG in data.js -->
           <div id="footer-contacts" class="footer-contacts"></div>
         </div>
 
         <div class="footer-cols">
-          <div class="footer-col reveal">
+          <div class="footer-col">
             <h4>Shop</h4>
             <ul>
-              <li><a href="#collection">All Products</a></li>
-              <li><a href="#combo-builder">Build Your Box</a></li>
+              <li><a href="#collection">All Masalas</a></li>
+              <li><a href="#chef-combo">Chef Special Combo</a></li>
               <li><a href="#recipes">Recipes</a></li>
             </ul>
           </div>
-          <div class="footer-col reveal">
+          <div class="footer-col">
             <h4>Company</h4>
             <ul>
               <li><a href="#engineering">How We Make It</a></li>
               <li><a data-instagram-link href="#" target="_blank" rel="noopener">Instagram</a></li>
             </ul>
           </div>
-          <div class="footer-col reveal">
+          <div class="footer-col">
             <h4>Support</h4>
             <ul>
+              <li><a href="#how-to-order">How to Order</a></li>
               <li><a data-email-link href="#">Email Us</a></li>
               <li><a href="legal/shipping.html">Shipping Info</a></li>
               <li><a href="legal/refund.html">Returns</a></li>
@@ -377,8 +276,7 @@
           </div>
         </div>
 
-        <!-- Replaces the old newsletter box (it didn't save emails anywhere). -->
-        <div class="footer-newsletter reveal">
+        <div class="footer-newsletter">
           <h4>Questions or Bulk Orders?</h4>
           <p>Restaurants, caterers and gifting orders welcome. Message us on WhatsApp.</p>
           <a data-whatsapp-link href="#" target="_blank" rel="noopener" class="btn btn-gold w-full">Chat on WhatsApp</a>
@@ -409,14 +307,10 @@
 
     <div class="footer-india">
       <div class="section-inner footer-india-inner">
-        <span>Proudly Made in</span>
-        <span class="gold-text">India</span>
-        <span class="india-flag">🇮🇳</span>
+        <span>Proudly Made in <span class="gold-text">India</span> <span class="india-flag">🇮🇳</span></span>
         <!-- FSSAI number is required to be displayed for packaged food. Set in CONFIG.fssaiLicense.
              These rows stay hidden while the value is still the 'XXXX' placeholder. -->
-        <span class="footer-sep" data-fssai-row>•</span>
         <span data-fssai-row>FSSAI Lic: <span id="footer-fssai" class="gold-text">—</span></span>
-        <span class="footer-sep" data-gstin-row>•</span>
         <span data-gstin-row>GSTIN: <span id="footer-gstin" class="gold-text">—</span></span>
       </div>
     </div>
@@ -424,11 +318,36 @@
 
 
   <!-- ===============================================================
-       CART DRAWER — slides in from the right.
-       All behaviour is in app.js. Layout below.
+       STICKY CART BAR — appears at the bottom once the cart has items.
+       WHATSAPP BUTTON — floating, shown while the cart is empty.
+       TOAST — the small "Added to cart" message.
+       =============================================================== -->
+  <div id="cart-bar" class="cart-bar" hidden>
+    <button id="cart-bar-open" class="cart-bar-info" type="button" aria-label="View cart">
+      <span class="cart-bar-icon"><i data-lucide="shopping-bag"></i></span>
+      <span>
+        <span id="cart-bar-count" class="cart-bar-count">0 items</span>
+        <span id="cart-bar-total" class="cart-bar-total">₹0</span>
+      </span>
+    </button>
+    <button id="cart-bar-checkout" class="btn btn-gold cart-bar-btn" type="button">
+      <span>Checkout</span>
+      <i data-lucide="arrow-right"></i>
+    </button>
+  </div>
+
+  <a id="wa-float" class="wa-float" data-whatsapp-link href="#" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
+  </a>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+
+  <!-- ===============================================================
+       CART DRAWER — slides in from the right (full screen on phones).
        =============================================================== -->
   <div id="cart-backdrop" class="cart-backdrop" hidden></div>
-  <aside id="cart-drawer" class="cart-drawer" hidden>
+  <aside id="cart-drawer" class="cart-drawer" hidden aria-label="Your cart">
     <div class="cart-header">
       <div class="cart-title">
         <i data-lucide="shopping-bag" class="gold-icon"></i>
@@ -442,13 +361,18 @@
       <div id="cart-empty" class="cart-empty">
         <div class="cart-empty-icon"><i data-lucide="shopping-bag"></i></div>
         <p class="cart-empty-title">Your cart is empty</p>
-        <p class="cart-empty-sub">Add some spices to get started</p>
+        <p class="cart-empty-sub">Add some masalas to get started</p>
+        <button id="cart-empty-shop" class="btn btn-gold" type="button">Shop Masalas</button>
       </div>
-      <div id="cart-upsell" class="cart-upsell" hidden></div>
       <div id="cart-items" class="cart-items"></div>
+      <div id="cart-upsell" class="cart-upsell" hidden></div>
     </div>
 
     <div id="cart-footer" class="cart-footer" hidden>
+      <div id="ship-progress" class="ship-progress">
+        <p id="ship-progress-text"></p>
+        <div class="ship-bar"><div id="ship-bar-fill"></div></div>
+      </div>
       <div id="cart-discount-badge" class="cart-discount-badge" hidden></div>
       <div class="cart-summary">
         <div class="cart-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
@@ -459,24 +383,23 @@
         <span>Proceed to Checkout</span>
         <i data-lucide="arrow-right"></i>
       </button>
-      <p class="cart-shipping-note">Prices include GST · Free shipping on orders of ₹500+</p>
+      <p class="cart-shipping-note">Prices include GST · Delivery charge shown at checkout</p>
     </div>
   </aside>
 
 
   <!-- ===============================================================
-       CHECKOUT MODAL — opens when user clicks "Proceed to Checkout".
-       Collects customer details, calculates GST + shipping, and sends
-       the order via WhatsApp (the standard for small Indian D2C shops).
+       CHECKOUT — collects details and sends the order on WhatsApp.
+       Full-screen on phones.
        =============================================================== -->
   <div id="checkout-modal" class="checkout-modal" hidden>
     <div class="checkout-backdrop"></div>
-    <div class="checkout-content">
+    <div class="checkout-content" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
       <button id="checkout-modal-close" class="checkout-close" aria-label="Close">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <div class="checkout-header">
-        <h2>Complete Your Order</h2>
+        <h2 id="checkout-title">Complete Your Order</h2>
         <p>We'll confirm your order, delivery date and payment on WhatsApp.</p>
       </div>
 
@@ -493,11 +416,11 @@
 
             <div class="checkout-row">
               <div class="checkout-field">
-                <label for="co-phone">Phone (WhatsApp) *</label>
-                <input id="co-phone" name="phone" type="tel" required autocomplete="tel" placeholder="10 digit mobile" pattern="[6-9][0-9]{9}" />
+                <label for="co-phone">Mobile (WhatsApp) *</label>
+                <input id="co-phone" name="phone" type="tel" required autocomplete="tel-national" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" pattern="[6-9][0-9]{9}" />
               </div>
               <div class="checkout-field">
-                <label for="co-email">Email</label>
+                <label for="co-email">Email (optional)</label>
                 <input id="co-email" name="email" type="email" autocomplete="email" />
               </div>
             </div>
@@ -506,23 +429,23 @@
 
             <div class="checkout-field">
               <label for="co-pincode">Pincode *</label>
-              <input id="co-pincode" name="pincode" type="text" required inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" />
-              <div id="co-pincode-status" class="checkout-pincode-status"></div>
+              <input id="co-pincode" name="pincode" type="text" required autocomplete="postal-code" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" />
+              <div id="co-pincode-status" class="checkout-pincode-status" aria-live="polite"></div>
             </div>
 
             <div class="checkout-field">
               <label for="co-address">Full Address *</label>
-              <textarea id="co-address" name="address" rows="3" required placeholder="House / Flat, Street, Landmark"></textarea>
+              <textarea id="co-address" name="address" rows="3" required autocomplete="street-address" placeholder="House / Flat, Street, Landmark"></textarea>
             </div>
 
             <div class="checkout-row">
               <div class="checkout-field">
                 <label for="co-city">City</label>
-                <input id="co-city" name="city" type="text" />
+                <input id="co-city" name="city" type="text" autocomplete="address-level2" />
               </div>
               <div class="checkout-field">
                 <label for="co-state">State</label>
-                <input id="co-state" name="state" type="text" />
+                <input id="co-state" name="state" type="text" autocomplete="address-level1" />
               </div>
             </div>
 
@@ -539,20 +462,15 @@
 
             <div class="checkout-totals">
               <div class="checkout-row-line"><span>Subtotal</span><span id="co-subtotal">₹0</span></div>
-              <div class="checkout-row-line discount" id="co-discount-row" hidden><span>Combo discount</span><span id="co-discount">-₹0</span></div>
-              <div class="checkout-row-line"><span id="co-shipping-label">Shipping</span><span id="co-shipping">₹0</span></div>
+              <div class="checkout-row-line discount" id="co-discount-row" hidden><span id="co-discount-label">Discount</span><span id="co-discount">-₹0</span></div>
+              <div class="checkout-row-line"><span id="co-shipping-label">Delivery</span><span id="co-shipping">₹0</span></div>
               <div class="checkout-row-line total"><span>Total</span><span id="co-total" class="gold-gradient">₹0</span></div>
               <div class="checkout-row-line"><span>Includes GST (5%)</span><span id="co-gst">₹0</span></div>
             </div>
 
             <button type="submit" id="co-whatsapp-btn" class="btn btn-gold w-full checkout-pay-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
               <span>Place Order via WhatsApp</span>
-            </button>
-
-            <!-- Razorpay option — disabled until backend exists. See note below. -->
-            <button type="button" id="co-razorpay-btn" class="btn btn-outline w-full checkout-pay-btn-secondary" disabled title="Online card / UPI payments require a backend server. Until your developer wires it up, please use WhatsApp checkout.">
-              Pay Online (Razorpay) — coming soon
             </button>
 
             <p class="checkout-note">
@@ -568,41 +486,34 @@
   </div>
 
   <!-- ===============================================================
-       ORDER CONFIRMATION MODAL — shown after the WhatsApp tab opens.
+       ORDER CONFIRMATION — shown after the WhatsApp tab opens.
        =============================================================== -->
   <div id="order-confirm-modal" class="checkout-modal" hidden>
     <div class="checkout-backdrop"></div>
-    <div class="checkout-content checkout-confirm">
+    <div class="checkout-content checkout-confirm" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
       <div class="confirm-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2>Order Sent!</h2>
-      <p>Your order <strong id="confirm-order-id">—</strong> has been sent via WhatsApp.</p>
-      <p>If WhatsApp didn't open automatically, copy this message and send it manually:</p>
+      <h2 id="confirm-title">Almost done!</h2>
+      <p>Your order <strong id="confirm-order-id">—</strong> is ready in WhatsApp. <strong>Tap Send in WhatsApp</strong> to place it.</p>
+      <a id="confirm-open-wa" class="btn btn-gold w-full confirm-wa-btn" href="#" target="_blank" rel="noopener">Open WhatsApp again</a>
+      <p>WhatsApp not opening? Copy this message and send it to <strong data-phone-text>us</strong>:</p>
       <textarea id="confirm-fallback-text" readonly class="confirm-fallback"></textarea>
-      <button id="confirm-done" class="btn btn-gold w-full">Done</button>
+      <button id="confirm-done" class="btn btn-outline w-full">Done</button>
     </div>
   </div>
 
   <!-- ===============================================================
-       RECIPE MODAL — opens when you click a recipe card.
+       RECIPE MODAL — opens when you tap a recipe card.
        =============================================================== -->
   <div id="recipe-modal" class="recipe-modal" hidden>
     <div class="recipe-modal-backdrop"></div>
-    <div class="recipe-modal-content" id="recipe-modal-content"></div>
+    <div class="recipe-modal-content" id="recipe-modal-content" role="dialog" aria-modal="true"></div>
   </div>
 
 
-  <!-- ===============================================================
-       EXTERNAL LIBRARIES (loaded from internet CDNs)
-       =============================================================== -->
-  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-
-  <!-- YOUR FILES -->
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
+  <script src="data.js?v=5" defer></script>
+  <script src="app.js?v=5" defer></script>
 </body>
 </html>
