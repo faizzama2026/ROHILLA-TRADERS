@@ -87,7 +87,12 @@ const Cart = {
   load() {
     try {
       const raw = localStorage.getItem('rohilla-cart');
-      if (raw) this.items = JSON.parse(raw).items || [];
+      const saved = raw ? (JSON.parse(raw).items || []) : [];
+      // Re-read every product from PRODUCTS so a saved cart always uses today's
+      // prices, and silently drop products that are no longer sold.
+      this.items = saved
+        .map(i => ({ product: window.getProductById(i.product && i.product.id), quantity: i.quantity }))
+        .filter(i => i.product && i.quantity > 0);
     } catch (e) { this.items = []; }
   },
   save() {
@@ -377,57 +382,82 @@ const Engineering = {
 const Collection = {
   init() {
     const grid = $('#product-grid');
-    window.PRODUCTS.forEach((p, i) => {
+
+    // One card per `group`; each size of that product is a variant on the card
+    const groups = [];
+    window.PRODUCTS.forEach(p => {
+      const key = p.group || p.id;
+      let g = groups.find(x => x.key === key);
+      if (!g) groups.push(g = { key, variants: [] });
+      g.variants.push(p);
+    });
+
+    groups.forEach((g, i) => {
       const card = document.createElement('div');
       card.className = 'product-card';
       card.style.transitionDelay = (i * 0.1) + 's';
-
-      const badges = [];
-      if (p.isBestseller)   badges.push(`<span class="badge badge-bestseller"><i data-lucide="trending-up"></i>Bestseller</span>`);
-      if (p.isNew)          badges.push(`<span class="badge badge-new"><i data-lucide="sparkles"></i>New</span>`);
-      if (p.originalPrice)  badges.push(`<span class="badge badge-discount">${window.formatDiscount(p.price, p.originalPrice)}</span>`);
-
-      // Only show rating row when there are real reviews (no fake stars on day 1)
-      const ratingHtml = p.reviewCount > 0 ? `
-        <div class="product-rating">
-          <div class="product-rating-stars"><i data-lucide="star"></i><span class="product-rating-num">${p.rating}</span></div>
-          <span class="product-rating-count">(${p.reviewCount.toLocaleString()})</span>
-        </div>` : '';
-
-      card.innerHTML = `
-        <div class="product-image">
-          <img src="${p.images[0]}" alt="${p.name}" loading="lazy" />
-          <div class="product-image-overlay"></div>
-          <div class="product-badges">${badges.join('')}</div>
-          <button class="product-quick-add" data-add="${p.id}" aria-label="Quick add ${p.name}">
-            <i data-lucide="shopping-bag"></i>
-          </button>
-        </div>
-        <div class="product-body">
-          ${ratingHtml}
-          <h3 class="product-name">${p.name}</h3>
-          <p class="product-sku">${p.sku}</p>
-          <p class="product-short">${p.shortDescription}</p>
-          <div class="product-price-row">
-            <span class="product-weight">${p.weight_g}g</span>
-            <div class="product-prices">
-              ${p.originalPrice ? `<span class="product-strike">${window.formatPrice(p.originalPrice)}</span>` : ''}
-              <span class="product-price gold-gradient">${window.formatPrice(p.price)}</span>
-            </div>
-          </div>
-          <button class="product-add-btn" data-add="${p.id}">Add to Cart</button>
-        </div>
-      `;
+      card._variants = g.variants;
+      Collection.renderCard(card, g.variants[0]);
       grid.appendChild(card);
     });
 
-    // Delegate all "add to cart" clicks
+    // Delegate size switches and "add to cart" clicks
     grid.addEventListener('click', (e) => {
+      const sizeBtn = e.target.closest('[data-size]');
+      if (sizeBtn) {
+        const card = sizeBtn.closest('.product-card');
+        Collection.renderCard(card, window.getProductById(sizeBtn.dataset.size));
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
       const btn = e.target.closest('[data-add]');
       if (!btn) return;
       const product = window.getProductById(btn.dataset.add);
       if (product) Cart.add(product);
     });
+  },
+
+  renderCard(card, p) {
+    const variants = card._variants;
+    const badges = [];
+    if (p.isBestseller)   badges.push(`<span class="badge badge-bestseller"><i data-lucide="trending-up"></i>Bestseller</span>`);
+    if (p.isNew)          badges.push(`<span class="badge badge-new"><i data-lucide="sparkles"></i>New</span>`);
+    if (p.originalPrice)  badges.push(`<span class="badge badge-discount">${window.formatDiscount(p.price, p.originalPrice)}</span>`);
+
+    // Only show rating row when there are real reviews (no fake stars on day 1)
+    const ratingHtml = p.reviewCount > 0 ? `
+      <div class="product-rating">
+        <div class="product-rating-stars"><i data-lucide="star"></i><span class="product-rating-num">${p.rating}</span></div>
+        <span class="product-rating-count">(${p.reviewCount.toLocaleString()})</span>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="product-image">
+        <img src="${p.images[0]}" alt="${p.name}" loading="lazy" />
+        <div class="product-image-overlay"></div>
+        <div class="product-badges">${badges.join('')}</div>
+        <button class="product-quick-add" data-add="${p.id}" aria-label="Quick add ${p.name}">
+          <i data-lucide="shopping-bag"></i>
+        </button>
+      </div>
+      <div class="product-body">
+        ${ratingHtml}
+        <h3 class="product-name">${p.name}</h3>
+        <p class="product-sku">${p.sku}</p>
+        <p class="product-short">${p.shortDescription}</p>
+        <div class="product-price-row">
+          ${variants.length > 1 ? `
+            <div class="product-sizes" role="group" aria-label="Pack size">
+              ${variants.map(v => `<button type="button" class="product-size${v.id === p.id ? ' is-active' : ''}" data-size="${v.id}" aria-pressed="${v.id === p.id}">${window.sizeLabel(v)}</button>`).join('')}
+            </div>` : `<span class="product-weight">${window.sizeLabel(p)}</span>`}
+          <div class="product-prices">
+            ${p.originalPrice ? `<span class="product-strike">${window.formatPrice(p.originalPrice)}</span>` : ''}
+            <span class="product-price gold-gradient">${window.formatPrice(p.price)}</span>
+          </div>
+        </div>
+        <button class="product-add-btn" data-add="${p.id}">Add to Cart</button>
+      </div>
+    `;
   }
 };
 
@@ -463,7 +493,7 @@ const ComboUI = {
   init() {
     // Render selectable products (left column)
     const list = $('#combo-products');
-    window.PRODUCTS.forEach(p => {
+    window.PRODUCTS.filter(p => p.inComboBuilder !== false).forEach(p => {
       const div = document.createElement('div');
       div.className = 'combo-product';
       div.dataset.productId = p.id;
@@ -779,7 +809,7 @@ const CartUI = {
         <img src="${product.images[0]}" alt="${product.name}" />
         <div class="cart-item-body">
           <h4>${product.name}</h4>
-          <p class="cart-item-sku">${product.sku}</p>
+          <p class="cart-item-sku">${window.sizeLabel(product)} · ${product.sku}</p>
           <p class="cart-item-price">${window.formatPrice(product.price)}</p>
           <div class="cart-qty">
             <button data-qty-dec="${product.id}" aria-label="Decrease"><i data-lucide="minus"></i></button>
@@ -902,7 +932,7 @@ const Checkout = {
       <div class="checkout-item">
         <img src="${product.images[0]}" alt="${product.name}" />
         <div class="checkout-item-info">
-          <div class="checkout-item-name">${product.name}</div>
+          <div class="checkout-item-name">${product.name} (${window.sizeLabel(product)})</div>
           <div class="checkout-item-qty">Qty ${quantity} × ${window.formatPrice(product.price)}</div>
         </div>
         <div class="checkout-item-price">${window.formatPrice(product.price * quantity)}</div>
@@ -977,7 +1007,7 @@ const Checkout = {
       orderId,
       placedAt: new Date().toISOString(),
       items: Cart.items.map(({ product, quantity }) => ({
-        id: product.id, name: product.name, sku: product.sku, price: product.price, quantity
+        id: product.id, name: product.name, size: window.sizeLabel(product), sku: product.sku, price: product.price, quantity
       })),
       customer,
       totals: t,
@@ -1021,7 +1051,7 @@ const Checkout = {
     lines.push('');
     lines.push('*Items:*');
     order.items.forEach(it => {
-      lines.push('• ' + it.name + ' (' + it.sku + ')  ×' + it.quantity + '  — ' + window.formatPrice(it.price * it.quantity));
+      lines.push('• ' + it.name + ' ' + it.size + ' (' + it.sku + ')  ×' + it.quantity + '  — ' + window.formatPrice(it.price * it.quantity));
     });
     lines.push('');
     lines.push('*Bill:*');

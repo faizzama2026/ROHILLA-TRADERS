@@ -4,12 +4,12 @@
    ===================================================================== */
 window.CONFIG = {
   // The number that receives WhatsApp orders. International format, no "+", no spaces.
-  // Example for an Indian mobile: '919997055377' (91 = India, then 10 digits).
-  whatsappNumber: '919997055377',
+  // Example for an Indian mobile: '918218602698' (91 = India, then 10 digits).
+  whatsappNumber: '918218602698',
 
   // Email shown in footer and used as fallback if WhatsApp is unavailable.
   contactEmail: 'rohillatraders25@gmail.com',
-  contactPhone: '+91 9997055377',
+  contactPhone: '+91 8218602698',
   contactAddress: '14/15 Masjid Domani, Quilla, Bareilly, Uttar Pradesh 243001',
 
   // Required for selling packaged food in India. Get from fssai.gov.in.
@@ -62,6 +62,9 @@ window.CONFIG = {
                        — or null. Only fill this from the printed pouch label, never estimate.
      images          array of image URLs (first one shows on the card)
      weight_g        weight in grams (shown on the card)
+     sizeLabel       optional text shown instead of "100g" (e.g. '3 × 100g')
+     group           entries with the same group become ONE card with a size switch
+     inComboBuilder  false → not offered in the "Build Your Box" section
      category        slug like "kebab-masala" — used for upsell logic
      tags            array of marketing tags
      rating          0–5
@@ -85,145 +88,140 @@ window.CONFIG = {
    and review, update these honestly. DO NOT seed fake reviews — it's against
    ASCI guidelines in India and customers always notice. */
 
+/* Each entry below is ONE sellable pouch (one size = one entry).
+   Entries with the same `group` show as ONE card on the website with a
+   size switch (e.g. 100g / 50g). The first entry of a group is the size
+   selected by default. */
+
+// Shared text for products that come in two sizes
+const TANDOORI = {
+  name: 'Tandoori Chicken Masala',
+  description: 'A smoky, full-flavoured tandoori blend for chicken, paneer, soya chunks and fish. Works in a tandoor, oven, pan or air fryer. The red colour comes from the spices themselves: no added colour, no preservatives. A free scoop comes inside every pouch.',
+  shortDescription: 'Smoky tandoori blend — great in the air fryer too',
+  images: [
+    'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80',
+    'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&q=80'
+  ],
+  group: 'tandoori', category: 'tandoori-masala',
+  tags: ['tandoor','grilling','air-fryer','meal-prep']
+};
+const BIRYANI = {
+  name: 'Biryani Masala',
+  description: 'An aromatic blend for chicken and mutton dum biryani, made the Rohilkhand way. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives. A free scoop comes inside every pouch.',
+  shortDescription: 'Aromatic blend for chicken & mutton dum biryani',
+  images: [
+    'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80',
+    'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&q=80'
+  ],
+  group: 'biryani', category: 'biryani-masala',
+  tags: ['biryani','dum','rohilkhand','fragrant']
+};
+const NIHARI = {
+  name: 'Nihari Masala',
+  description: 'For rich, slow-cooked nihari the way Bareilly makes it: a weekend breakfast and a winter favourite. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives. A free scoop comes inside every pouch.',
+  shortDescription: 'For slow-cooked, Bareilly-style nihari',
+  images: [
+    'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=800&q=80',
+    'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=800&q=80'
+  ],
+  group: 'nihari', category: 'nihari-masala',
+  tags: ['nihari','bareilly','slow-cooked','authentic']
+};
+
+// Defaults every pouch shares
+const POUCH = { stock_quantity: 0, nutritional_info: null, rating: 0, reviewCount: 0, isBestseller: false, isNew: false, inComboBuilder: true };
+
 window.PRODUCTS = [
+  // ---------------- Tandoori Chicken Masala: 100g + 50g ----------------
+  { ...POUCH, ...TANDOORI, id: 'prod_002',    sku: 'TAND-100', weight_g: 100, price: 170, originalPrice: null },
+  { ...POUCH, ...TANDOORI, id: 'prod_002_50', sku: 'TAND-50',  weight_g: 50,  price: 88,  originalPrice: 99, inComboBuilder: false },
+
+  // ---------------- Kebab Masala: 100g ----------------
   {
+    ...POUCH,
     id: 'prod_001',
     name: 'Kebab Masala',
     sku: 'KEBAB-100',
-    price: 249,
-    originalPrice: 299,
-    stock_quantity: 500,
+    weight_g: 100,
+    price: 170,
+    originalPrice: null,
     description: 'Our Kebab Masala is blended and packed in Bareilly for seekh, shami and galouti kebabs, the way they are made across Rohilkhand. 100% natural ingredients, with no added colour and no preservatives. A free scoop comes inside every pouch.',
     shortDescription: 'Rohilkhand-style blend for seekh & shami kebabs',
-    // Copy nutrition + ingredients EXACTLY from the printed pouch label before displaying them.
-    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
-      'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80',
-      'https://images.unsplash.com/photo-1606843047913-8b5a0f7e4e6a?w=800&q=80'
+      'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80'
     ],
-    weight_g: 100,
-    category: 'kebab-masala',
-    tags: ['grilling','bbq','mughlai','premium'],
-    rating: 0,
-    reviewCount: 0,
-    isBestseller: false,
-    isNew: false
+    group: 'kebab', category: 'kebab-masala',
+    tags: ['grilling','bbq','kebab','rohilkhand']
   },
+
+  // ---------------- Nihari Masala: 100g + 50g ----------------
+  { ...POUCH, ...NIHARI, id: 'prod_004',    sku: 'NIHA-100', weight_g: 100, price: 170, originalPrice: null },
+  { ...POUCH, ...NIHARI, id: 'prod_004_50', sku: 'NIHA-50',  weight_g: 50,  price: 88,  originalPrice: 99, inComboBuilder: false },
+
+  // ---------------- Biryani Masala: 100g + 50g ----------------
+  { ...POUCH, ...BIRYANI, id: 'prod_003',    sku: 'BIRY-100', weight_g: 100, price: 170, originalPrice: null },
+  { ...POUCH, ...BIRYANI, id: 'prod_003_50', sku: 'BIRY-50',  weight_g: 50,  price: 88,  originalPrice: 99, inComboBuilder: false },
+
+  // ---------------- Garam Masala: 100g ----------------
   {
-    id: 'prod_002',
-    name: 'Tandoori Masala',
-    sku: 'TAND-100',
-    price: 229,
-    originalPrice: 279,
-    stock_quantity: 450,
-    description: 'A smoky, full-flavoured tandoori blend for chicken, paneer, soya chunks and fish. Works in a tandoor, oven, pan or air fryer. The red colour comes from the spices themselves: no added colour, no preservatives. A free scoop comes inside every pouch.',
-    shortDescription: 'Smoky tandoori blend — great in the air fryer too',
-    nutritional_info: null,
-    images: [
-      'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80',
-      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&q=80',
-      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80'
-    ],
-    weight_g: 100,
-    category: 'tandoori-masala',
-    tags: ['tandoor','grilling','punjabi','smoky'],
-    rating: 0,
-    reviewCount: 0,
-    isBestseller: false,
-    isNew: false
-  },
-  {
-    id: 'prod_003',
-    name: 'Biryani Masala',
-    sku: 'BIRY-100',
-    price: 269,
-    originalPrice: 329,
-    stock_quantity: 380,
-    description: 'An aromatic blend for chicken and mutton dum biryani, made the Rohilkhand way. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives. A free scoop comes inside every pouch.',
-    shortDescription: 'Aromatic blend for chicken & mutton dum biryani',
-    nutritional_info: null,
-    images: [
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80',
-      'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&q=80',
-      'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=800&q=80'
-    ],
-    weight_g: 100,
-    category: 'biryani-masala',
-    tags: ['biryani','hyderabadi','royal','fragrant'],
-    rating: 0,
-    reviewCount: 0,
-    isBestseller: false,
-    isNew: false
-  },
-  {
-    id: 'prod_004',
-    name: 'Nihari Masala',
-    sku: 'NIHA-100',
-    price: 289,
-    originalPrice: 349,
-    stock_quantity: 320,
-    description: 'For rich, slow-cooked nihari the way Bareilly makes it: a weekend breakfast and a winter favourite. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives. A free scoop comes inside every pouch.',
-    shortDescription: 'For slow-cooked, Bareilly-style nihari',
-    nutritional_info: null,
-    images: [
-      'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=800&q=80',
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80',
-      'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=800&q=80'
-    ],
-    weight_g: 100,
-    category: 'nihari-masala',
-    tags: ['nihari','delhi','slow-cooked','authentic'],
-    rating: 0,
-    reviewCount: 0,
-    isBestseller: false,
-    isNew: true
-  },
-  {
+    ...POUCH,
     id: 'prod_005',
     name: 'Garam Masala',
     sku: 'GARA-100',
-    price: 199,
-    originalPrice: 249,
-    stock_quantity: 600,
+    weight_g: 100,
+    price: 130,
+    originalPrice: 150,
     description: 'An aromatic everyday blend to finish dals, sabzis and meat curries. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives.',
     shortDescription: 'Aromatic finishing blend for everyday cooking',
-    nutritional_info: null,
     images: [
-      'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
       'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&q=80',
       'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=800&q=80'
     ],
-    weight_g: 100,
-    category: 'garam-masala',
-    tags: ['universal','essential','aromatic','classic'],
-    rating: 0,
-    reviewCount: 0,
-    isBestseller: false,
-    isNew: false
+    group: 'garam', category: 'garam-masala',
+    tags: ['everyday','aromatic','classic']
   },
+
+  // ---------------- Chaat Masala: 100g ----------------
   {
-    id: 'prod_006',
-    name: 'Curry Masala',
-    sku: 'CURR-100',
-    price: 219,
-    originalPrice: 269,
-    stock_quantity: 420,
-    description: 'A balanced everyday blend for home-style chicken, mutton and vegetable curries. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives.',
-    shortDescription: 'Everyday blend for home-style curries',
-    nutritional_info: null,
-    images: [
-      'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=800&q=80',
-      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
-      'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80'
-    ],
+    ...POUCH,
+    id: 'prod_007',
+    name: 'Chaat Masala',
+    sku: 'CHAT-100',
     weight_g: 100,
-    category: 'curry-masala',
-    tags: ['curry','everyday','versatile','essential'],
-    rating: 0,
-    reviewCount: 0,
-    isBestseller: false,
-    isNew: false
+    price: 99,
+    originalPrice: null,
+    description: 'Tangy chaat masala for fruit chaat, aloo chaat, raita, salads, chaas and fries. Blended and packed in Bareilly with no added colour and no preservatives.',
+    shortDescription: 'Tangy sprinkle for chaat, fruits, raita & fries',
+    images: [
+      'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80',
+      'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=800&q=80'
+    ],
+    group: 'chaat', category: 'chaat-masala',
+    tags: ['chaat','tangy','snacks'],
+    isNew: true
+  },
+
+  // ---------------- Chef Special Combo: Haldi + Dhaniya + Lal Mirch ----------------
+  {
+    ...POUCH,
+    id: 'prod_008',
+    name: 'Chef Special Combo',
+    sku: 'COMBO-HDM-300',
+    weight_g: 300,
+    sizeLabel: '3 × 100g',
+    price: 220,
+    originalPrice: 250,
+    description: 'The three everyday essentials in one pack: Haldi (turmeric), Dhaniya (coriander) and Lal Mirch (red chilli) powder, 100g each (300g total). Pure single spices with no added colour and no preservatives.',
+    shortDescription: 'Haldi + Dhaniya + Lal Mirch, 100g each',
+    images: [
+      'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
+      'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&q=80'
+    ],
+    group: 'chef-combo', category: 'pure-spices',
+    tags: ['haldi','dhaniya','lal-mirch','combo'],
+    isNew: true,
+    inComboBuilder: false   // already a combo, so it isn't offered inside "Build Your Box"
   }
 ];
 
@@ -244,7 +242,7 @@ window.RECIPES = [
     description: 'The classic Punjabi dish that needs no introduction. Smoky, spicy, and utterly delicious.',
     image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80',
     prepTime: 30, cookTime: 40, servings: 4, difficulty: 'Easy',
-    ingredients: ['1 kg chicken, cut into pieces','4 tbsp ROHILLA Tandoori Masala','1 cup hung curd','2 tbsp lemon juice','2 tbsp mustard oil','Butter for basting'],
+    ingredients: ['1 kg chicken, cut into pieces','4 tbsp ROHILLA Tandoori Chicken Masala','1 cup hung curd','2 tbsp lemon juice','2 tbsp mustard oil','Butter for basting'],
     instructions: ['Make deep cuts in the chicken pieces','Mix Tandoori Masala with curd, lemon juice, and mustard oil','Marinate chicken for at least 4 hours, preferably overnight','Cook in a preheated oven at 220°C for 35-40 minutes (or air-fry at 200°C for 18-20 minutes, turning once)','Baste with butter halfway through (skip it for a lighter meal-prep version)','Serve hot with mint chutney and onion rings'],
     relatedProductIds: ['prod_002']
   },
@@ -270,13 +268,13 @@ window.RECIPES = [
   },
   {
     id: 'rec_005',
-    title: 'Butter Chicken',
-    description: 'The crown jewel of Punjabi cuisine. Creamy, tomatoey perfection.',
-    image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=800&q=80',
-    prepTime: 40, cookTime: 45, servings: 4, difficulty: 'Medium',
-    ingredients: ['800g chicken, boneless','3 tbsp ROHILLA Curry Masala','1/2 cup yogurt','2 cups tomato puree','1 cup fresh cream','4 tbsp butter','2 tbsp honey','Kasuri methi'],
-    instructions: ['Marinate chicken with half the Curry Masala and yogurt','Grill or pan-fry the chicken until cooked','In a separate pan, melt butter and add tomato puree','Add remaining Curry Masala and simmer for 20 minutes','Add cream, honey, and grilled chicken','Finish with kasuri methi and a dollop of butter'],
-    relatedProductIds: ['prod_006']
+    title: 'Aloo Chaat',
+    description: 'Crispy, tangy street-style aloo chaat, ready in 20 minutes.',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80',
+    prepTime: 10, cookTime: 15, servings: 2, difficulty: 'Easy',
+    ingredients: ['4 boiled potatoes, cubed','1 tsp ROHILLA Chaat Masala (plus extra to sprinkle)','1/2 tsp ROHILLA Lal Mirch','1 tbsp oil','1 small onion, finely chopped','Green chutney and tamarind chutney','Lemon juice and fresh coriander'],
+    instructions: ['Pan-fry or air-fry the potato cubes until golden and crisp','Toss the hot potatoes with Chaat Masala and Lal Mirch','Add onion, both chutneys and a squeeze of lemon','Sprinkle more Chaat Masala and coriander on top','Serve immediately while crisp'],
+    relatedProductIds: ['prod_007', 'prod_008']
   }
 ];
 
@@ -353,12 +351,25 @@ window.getProductById = function (id) {
   return window.PRODUCTS.find(p => p.id === id);
 };
 
-// Smart upsell mapping — what to suggest when a product is added to cart
+// Smart upsell mapping — what to suggest when a product is added to cart.
+// Suggests the first (default-size) pouch of the paired category.
+const UPSELL_PAIRS = {
+  'kebab-masala':    'tandoori-masala',
+  'tandoori-masala': 'kebab-masala',
+  'biryani-masala':  'garam-masala',
+  'nihari-masala':   'garam-masala',
+  'garam-masala':    'pure-spices',
+  'chaat-masala':    'pure-spices',
+  'pure-spices':     'chaat-masala'
+};
 window.getUpsellProduct = function (productId) {
   const product = window.getProductById(productId);
   if (!product) return null;
-  if (product.category === 'kebab-masala')     return window.PRODUCTS.find(p => p.category === 'tandoori-masala');
-  if (product.category === 'tandoori-masala')  return window.PRODUCTS.find(p => p.category === 'kebab-masala');
-  if (product.category === 'biryani-masala')   return window.PRODUCTS.find(p => p.category === 'garam-masala');
-  return window.PRODUCTS.find(p => p.isBestseller && p.id !== productId) || null;
+  const pair = UPSELL_PAIRS[product.category];
+  return (pair && window.PRODUCTS.find(p => p.category === pair)) || null;
+};
+
+// Size label shown on cards, cart and orders ("100g", "3 × 100g")
+window.sizeLabel = function (product) {
+  return product.sizeLabel || (product.weight_g + 'g');
 };

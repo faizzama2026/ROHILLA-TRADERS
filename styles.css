@@ -814,6 +814,24 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   justify-content: space-between;
 }
 .product-weight { color: var(--white-40); font-size: 0.875rem; }
+
+/* Pack-size switch (100g / 50g) on product cards */
+.product-sizes { display: flex; gap: 0.375rem; }
+.product-size {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--white-20);
+  border-radius: 999px;
+  color: var(--white-50);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+.product-size:hover { color: #fff; border-color: var(--white-40); }
+.product-size.is-active {
+  color: var(--gold-start);
+  border-color: var(--gold-start);
+  background: rgba(191,149,63,0.08);
+}
 .product-prices { display: flex; align-items: center; gap: 0.5rem; }
 .product-strike { color: var(--white-40); font-size: 0.875rem; text-decoration: line-through; }
 .product-price {
