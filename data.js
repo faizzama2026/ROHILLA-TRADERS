@@ -15,10 +15,10 @@ window.CONFIG = {
   // Required for selling packaged food in India. Get from fssai.gov.in.
   // Displayed on legal pages and in the footer. While a value is still
   // 'XXXX…', the website hides it instead of showing the placeholder.
-  fssaiLicense: 'XXXXXXXXXXXXXX',          // 14-digit number
-  gstin: 'XXXXXXXXXXXXXXX',                // 15-character GSTIN
+  fssaiLicense: '12726009000155',          // State licence, valid till 02-05-2027 — renew from 04-11-2026 (180 days before)
+  gstin: '09ABNFR2257C1Z3',                // GST registration from 18-02-2026
   companyLegalName: 'M/S Rohilla Traders', // partnership firm
-  grievanceOfficer: 'Faiz, Managing Partner',
+  grievanceOfficer: 'Faiz Zama, Partner',
 
   // Tax & shipping rules.
   // Prices in PRODUCTS are MRP INCLUSIVE of GST (required by Legal Metrology
