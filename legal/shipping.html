@@ -14,7 +14,7 @@
     <a href="../index.html" class="back-link">← Back to ROHILLA</a>
 
     <h1>Shipping Policy</h1>
-    <p class="legal-updated">Last updated: <span data-today></span></p>
+    <p class="legal-updated">Last updated: 11 September 2026</p>
 
     <h2>Where we ship</h2>
     <p>We ship across India through reputed courier partners (Shiprocket, Delhivery, India Post, Bluedart). Check serviceability at checkout by entering your pincode.</p>
@@ -61,7 +61,6 @@
 
   <script src="../data.js"></script>
   <script>
-    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
     document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
     document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
   </script>

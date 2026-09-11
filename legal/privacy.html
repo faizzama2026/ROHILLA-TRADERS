@@ -21,10 +21,10 @@
     <a href="../index.html" class="back-link">← Back to ROHILLA</a>
 
     <h1>Privacy Policy</h1>
-    <p class="legal-updated">Last updated: <span data-today></span></p>
+    <p class="legal-updated">Last updated: 11 September 2026</p>
 
     <h2>1. Who we are</h2>
-    <p>This privacy policy explains how <strong>ROHILLA Traders</strong> ("we", "our", "us") collects, uses and protects information about you when you visit our website or place an order.</p>
+    <p>This privacy policy explains how <strong>M/S Rohilla Traders</strong> ("we", "our", "us") collects, uses and protects information about you when you visit our website or place an order.</p>
 
     <h2>2. What information we collect</h2>
     <p>We collect only the information needed to fulfil your order and respond to your queries:</p>
@@ -32,7 +32,7 @@
       <li><strong>Identity & Contact:</strong> name, phone number, email address</li>
       <li><strong>Delivery details:</strong> shipping address, pincode, city, state</li>
       <li><strong>Order details:</strong> products, quantities, prices, order notes</li>
-      <li><strong>Payment information:</strong> handled directly by our payment partner (Razorpay). We do <em>not</em> see or store your card / UPI details on our servers.</li>
+      <li><strong>Payment information:</strong> once online payment is enabled, it is handled directly by our payment partner (Razorpay). We do <em>not</em> see or store your card / UPI details.</li>
       <li><strong>Communications:</strong> messages you send us on WhatsApp / email</li>
     </ul>
 
@@ -42,7 +42,7 @@
       <li>To send order confirmations and shipping updates</li>
       <li>To respond to customer support enquiries</li>
       <li>To comply with Indian tax and consumer-protection law</li>
-      <li>If you opt in: to send occasional recipes and offers (you can unsubscribe any time)</li>
+      <li>If you opt in on WhatsApp: to send occasional recipes and offers (you can opt out any time)</li>
     </ul>
 
     <h2>4. Who we share it with</h2>
@@ -75,8 +75,8 @@
     <div class="legal-contact">
       <p><strong>Grievance Officer (as required under IT Rules 2011):</strong></p>
       <p>
-        [Officer Name]<br/>
-        ROHILLA Traders<br/>
+        <span data-officer>—</span><br/>
+        M/S Rohilla Traders<br/>
         <span data-address>—</span><br/>
         Email: <span data-email>—</span><br/>
         Phone: <span data-phone>—</span>
@@ -87,10 +87,10 @@
   <script src="../data.js"></script>
   <script>
     // Fill placeholders from CONFIG so contact details stay in one place
-    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
     document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
     document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
     document.querySelectorAll('[data-address]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactAddress) || '—');
+    document.querySelectorAll('[data-officer]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.grievanceOfficer) || '—');
   </script>
 </body>
 </html>

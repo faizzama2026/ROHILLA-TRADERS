@@ -8,17 +8,22 @@ window.CONFIG = {
   whatsappNumber: '919997055377',
 
   // Email shown in footer and used as fallback if WhatsApp is unavailable.
-  contactEmail: 'hello@rohilla.com',
+  contactEmail: 'rohillatraders25@gmail.com',
   contactPhone: '+91 9997055377',
-  contactAddress: '123 Spice Market, Bareilly, UP 243003',
+  contactAddress: '14/15 Masjid Domani, Quilla, Bareilly, Uttar Pradesh 243001',
 
   // Required for selling packaged food in India. Get from fssai.gov.in.
-  // Displayed on legal pages and order confirmations.
+  // Displayed on legal pages and in the footer. While a value is still
+  // 'XXXX…', the website hides it instead of showing the placeholder.
   fssaiLicense: 'XXXXXXXXXXXXXX',          // 14-digit number
-  gstin: 'XXXXXXXXXXXXXXX',                // 15-character GSTIN; leave as XXX if not registered yet
-  companyLegalName: 'ROHILLA Traders',     // legal entity name (proprietorship/pvt ltd etc.)
+  gstin: 'XXXXXXXXXXXXXXX',                // 15-character GSTIN
+  companyLegalName: 'M/S Rohilla Traders', // partnership firm
+  grievanceOfficer: 'Faiz, Managing Partner',
 
   // Tax & shipping rules.
+  // Prices in PRODUCTS are MRP INCLUSIVE of GST (required by Legal Metrology
+  // rules in India). Checkout only shows how much of the total is GST — it
+  // never adds GST on top of the price.
   gstRate: 0.05,                           // 5% GST on branded packaged spices (HSN 0904-0910)
   freeShippingThreshold: 500,              // free shipping above this cart total (in ₹)
   shippingCost: 49,                        // flat shipping fee below threshold (in ₹)
@@ -30,10 +35,13 @@ window.CONFIG = {
 
   // Trust badges shown in the hero. Keep them HONEST — replace as you grow.
   trustIndicators: [
-    { value: 'FSSAI',         label: 'Certified Food' },
-    { value: '100%',          label: 'Natural Spices' },
-    { value: 'Bareilly',      label: 'Made in India' }
-  ]
+    { value: 'FSSAI',         label: 'Licensed' },
+    { value: 'Zero',          label: 'Added Colour' },
+    { value: 'Bareilly',      label: 'Blended & Packed' }
+  ],
+
+  // Social links shown in the footer. Leave '' to hide an icon.
+  instagramUrl: 'https://www.instagram.com/rohillaspices/'
 };
 
 /* =====================================================================
@@ -51,6 +59,7 @@ window.CONFIG = {
      description     long description (used on detail/modal screens)
      shortDescription   one-liner under product name on cards
      nutritional_info   { servingSize, calories, protein, carbohydrates, fat, sodium, ingredients[] }
+                       — or null. Only fill this from the printed pouch label, never estimate.
      images          array of image URLs (first one shows on the card)
      weight_g        weight in grams (shown on the card)
      category        slug like "kebab-masala" — used for upsell logic
@@ -84,12 +93,10 @@ window.PRODUCTS = [
     price: 249,
     originalPrice: 299,
     stock_quantity: 500,
-    description: 'An artisanal blend of 18 premium spices, meticulously roasted and ground to perfection. Our Kebab Masala delivers an authentic Lucknowi flavor profile with notes of mace, nutmeg, and hand-picked Kashmiri chillies. Each pouch contains our patented integrated dosing scoop for precise 5g measurements.',
-    shortDescription: 'Authentic Lucknowi blend with 18 premium spices',
-    nutritional_info: {
-      servingSize: '5g', calories: 15, protein: 0.5, carbohydrates: 2.5, fat: 0.3, sodium: 180,
-      ingredients: ['Coriander','Cumin','Kashmiri Red Chilli','Black Cardamom','Green Cardamom','Cinnamon','Cloves','Mace','Nutmeg','Black Pepper','Bay Leaf','Stone Flower','Dried Ginger','Turmeric','Fennel','Star Anise','Shahi Jeera','Salt']
-    },
+    description: 'Our Kebab Masala is blended and packed in Bareilly for seekh, shami and galouti kebabs, the way they are made across Rohilkhand. 100% natural ingredients, with no added colour and no preservatives. A free scoop comes inside every pouch.',
+    shortDescription: 'Rohilkhand-style blend for seekh & shami kebabs',
+    // Copy nutrition + ingredients EXACTLY from the printed pouch label before displaying them.
+    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
       'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80',
@@ -100,7 +107,7 @@ window.PRODUCTS = [
     tags: ['grilling','bbq','mughlai','premium'],
     rating: 0,
     reviewCount: 0,
-    isBestseller: true,
+    isBestseller: false,
     isNew: false
   },
   {
@@ -110,12 +117,9 @@ window.PRODUCTS = [
     price: 229,
     originalPrice: 279,
     stock_quantity: 450,
-    description: 'The crown jewel of Punjabi cuisine. Our Tandoori Masala combines the smoky intensity of charred spices with the vibrant hue of Kashmiri chillies. Perfect for tandoori chicken, paneer tikka, and oven-roasted vegetables.',
-    shortDescription: 'Smoky Punjabi blend for authentic tandoori flavor',
-    nutritional_info: {
-      servingSize: '5g', calories: 12, protein: 0.4, carbohydrates: 2.0, fat: 0.2, sodium: 200,
-      ingredients: ['Kashmiri Red Chilli','Coriander','Cumin','Black Salt','Dried Mango Powder','Ginger','Garlic','Kasuri Methi','Turmeric','Black Pepper','Cinnamon','Cloves','Nutmeg','Mace','Salt']
-    },
+    description: 'A smoky, full-flavoured tandoori blend for chicken, paneer, soya chunks and fish. Works in a tandoor, oven, pan or air fryer. The red colour comes from the spices themselves: no added colour, no preservatives. A free scoop comes inside every pouch.',
+    shortDescription: 'Smoky tandoori blend — great in the air fryer too',
+    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80',
       'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&q=80',
@@ -126,7 +130,7 @@ window.PRODUCTS = [
     tags: ['tandoor','grilling','punjabi','smoky'],
     rating: 0,
     reviewCount: 0,
-    isBestseller: true,
+    isBestseller: false,
     isNew: false
   },
   {
@@ -136,12 +140,9 @@ window.PRODUCTS = [
     price: 269,
     originalPrice: 329,
     stock_quantity: 380,
-    description: 'A royal blend that transforms ordinary rice into a fragrant masterpiece. Our Biryani Masala features saffron-infused notes, rose petals, and the rare kewra water essence. Each grain tells a story of Hyderabad\'s culinary heritage.',
-    shortDescription: 'Royal Hyderabadi blend with saffron and rose',
-    nutritional_info: {
-      servingSize: '5g', calories: 18, protein: 0.6, carbohydrates: 3.0, fat: 0.4, sodium: 160,
-      ingredients: ['Shahi Jeera','Black Cumin','Mace','Nutmeg','Green Cardamom','Black Cardamom','Cloves','Cinnamon','Bay Leaf','Saffron','Dried Rose Petals','Kewra','Star Anise','Stone Flower','Coriander','Salt']
-    },
+    description: 'An aromatic blend for chicken and mutton dum biryani, made the Rohilkhand way. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives. A free scoop comes inside every pouch.',
+    shortDescription: 'Aromatic blend for chicken & mutton dum biryani',
+    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80',
       'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&q=80',
@@ -152,7 +153,7 @@ window.PRODUCTS = [
     tags: ['biryani','hyderabadi','royal','fragrant'],
     rating: 0,
     reviewCount: 0,
-    isBestseller: true,
+    isBestseller: false,
     isNew: false
   },
   {
@@ -162,12 +163,9 @@ window.PRODUCTS = [
     price: 289,
     originalPrice: 349,
     stock_quantity: 320,
-    description: 'The secret behind Delhi\'s legendary morning delicacy. Our Nihari Masala is a complex blend of 24 spices, including the rare paan ki jad and sandalwood powder. Slow-cooked perfection in every spoonful.',
-    shortDescription: 'Delhi-style blend with 24 rare spices',
-    nutritional_info: {
-      servingSize: '5g', calories: 20, protein: 0.7, carbohydrates: 3.2, fat: 0.5, sodium: 220,
-      ingredients: ['Wheat Flour','Coriander','Cumin','Fennel','Ginger','Turmeric','Red Chilli','Black Pepper','Cloves','Cinnamon','Cardamom','Mace','Nutmeg','Bay Leaf','Paan Ki Jad','Sandalwood Powder','Dried Mint','Salt']
-    },
+    description: 'For rich, slow-cooked nihari the way Bareilly makes it: a weekend breakfast and a winter favourite. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives. A free scoop comes inside every pouch.',
+    shortDescription: 'For slow-cooked, Bareilly-style nihari',
+    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=800&q=80',
       'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80',
@@ -188,12 +186,9 @@ window.PRODUCTS = [
     price: 199,
     originalPrice: 249,
     stock_quantity: 600,
-    description: 'The foundation of Indian cooking. Our Garam Masala is hand-blended in small batches using whole spices roasted at precise temperatures. A universal seasoning that elevates any dish.',
-    shortDescription: 'Hand-blended universal Indian seasoning',
-    nutritional_info: {
-      servingSize: '3g', calories: 10, protein: 0.3, carbohydrates: 1.8, fat: 0.2, sodium: 140,
-      ingredients: ['Black Cardamom','Green Cardamom','Cinnamon','Cloves','Black Pepper','Cumin','Coriander','Bay Leaf','Nutmeg','Mace']
-    },
+    description: 'An aromatic everyday blend to finish dals, sabzis and meat curries. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives.',
+    shortDescription: 'Aromatic finishing blend for everyday cooking',
+    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
       'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&q=80',
@@ -204,7 +199,7 @@ window.PRODUCTS = [
     tags: ['universal','essential','aromatic','classic'],
     rating: 0,
     reviewCount: 0,
-    isBestseller: true,
+    isBestseller: false,
     isNew: false
   },
   {
@@ -214,12 +209,9 @@ window.PRODUCTS = [
     price: 219,
     originalPrice: 269,
     stock_quantity: 420,
-    description: 'Your everyday curry companion. A balanced blend that delivers consistent, restaurant-quality results. From butter chicken to vegetable korma, this is your secret weapon.',
-    shortDescription: 'Everyday curry blend for restaurant-quality results',
-    nutritional_info: {
-      servingSize: '5g', calories: 16, protein: 0.5, carbohydrates: 2.8, fat: 0.3, sodium: 190,
-      ingredients: ['Coriander','Turmeric','Cumin','Red Chilli','Fenugreek','Mustard Seeds','Curry Leaves','Black Pepper','Ginger','Garlic','Onion Powder','Tomato Powder','Salt']
-    },
+    description: 'A balanced everyday blend for home-style chicken, mutton and vegetable curries. Blended and packed in Bareilly with 100% natural ingredients, no added colour and no preservatives.',
+    shortDescription: 'Everyday blend for home-style curries',
+    nutritional_info: null,
     images: [
       'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=800&q=80',
       'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
@@ -253,7 +245,7 @@ window.RECIPES = [
     image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80',
     prepTime: 30, cookTime: 40, servings: 4, difficulty: 'Easy',
     ingredients: ['1 kg chicken, cut into pieces','4 tbsp ROHILLA Tandoori Masala','1 cup hung curd','2 tbsp lemon juice','2 tbsp mustard oil','Butter for basting'],
-    instructions: ['Make deep cuts in the chicken pieces','Mix Tandoori Masala with curd, lemon juice, and mustard oil','Marinate chicken for at least 4 hours, preferably overnight','Cook in a preheated oven at 220°C for 35-40 minutes','Baste with butter halfway through','Serve hot with mint chutney and onion rings'],
+    instructions: ['Make deep cuts in the chicken pieces','Mix Tandoori Masala with curd, lemon juice, and mustard oil','Marinate chicken for at least 4 hours, preferably overnight','Cook in a preheated oven at 220°C for 35-40 minutes (or air-fry at 200°C for 18-20 minutes, turning once)','Baste with butter halfway through (skip it for a lighter meal-prep version)','Serve hot with mint chutney and onion rings'],
     relatedProductIds: ['prod_002']
   },
   {
@@ -272,7 +264,7 @@ window.RECIPES = [
     description: 'The breakfast of champions. A slow-cooked stew that warms the soul.',
     image: 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=800&q=80',
     prepTime: 20, cookTime: 360, servings: 6, difficulty: 'Medium',
-    ingredients: ['1 kg beef shanks','5 tbsp ROHILLA Nihari Masala','1/2 cup wheat flour','1 cup fried onions','Ginger juliennes','Fresh coriander','Green chillies'],
+    ingredients: ['1 kg beef or mutton shanks (nalli)','5 tbsp ROHILLA Nihari Masala','1/2 cup wheat flour','1 cup fried onions','Ginger juliennes','Fresh coriander','Green chillies'],
     instructions: ['Brown the beef shanks in a large pot','Add Nihari Masala and fry for 2 minutes','Add water and simmer on low heat for 5-6 hours','Mix wheat flour with water to make a slurry','Add slurry to thicken the gravy','Garnish with ginger, coriander, and green chillies'],
     relatedProductIds: ['prod_004']
   },
@@ -282,7 +274,7 @@ window.RECIPES = [
     description: 'The crown jewel of Punjabi cuisine. Creamy, tomatoey perfection.',
     image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=800&q=80',
     prepTime: 40, cookTime: 45, servings: 4, difficulty: 'Medium',
-    ingredients: ['800g chicken, boneless','3 tbsp ROHILLA Curry Masala','2 cups tomato puree','1 cup fresh cream','4 tbsp butter','2 tbsp honey','Kasuri methi'],
+    ingredients: ['800g chicken, boneless','3 tbsp ROHILLA Curry Masala','1/2 cup yogurt','2 cups tomato puree','1 cup fresh cream','4 tbsp butter','2 tbsp honey','Kasuri methi'],
     instructions: ['Marinate chicken with half the Curry Masala and yogurt','Grill or pan-fry the chicken until cooked','In a separate pan, melt butter and add tomato puree','Add remaining Curry Masala and simmer for 20 minutes','Add cream, honey, and grilled chicken','Finish with kasuri methi and a dollop of butter'],
     relatedProductIds: ['prod_006']
   }
@@ -305,11 +297,12 @@ window.GALLERY = [
    ENGINEERING FEATURES — the four cards in the "Engineered for Excellence"
    section. `icon` matches a lucide icon name (https://lucide.dev/icons).
    ===================================================================== */
+/* Only list things that are TRUE about how you make and pack the spices. */
 window.ENGINEERING_FEATURES = [
-  { icon: 'ruler',    title: 'Precision Dosing', description: 'Integrated 5g scoop ensures perfect measurements every time. No guesswork, just consistency.', spec: '±0.1g Accuracy' },
-  { icon: 'droplets', title: 'Aroma Lock',       description: 'Triple-layer barrier technology preserves volatile oils and maintains freshness for 24 months.', spec: '99.9% Sealed' },
-  { icon: 'shield',   title: 'Food Safe',        description: 'BPA-free, food-grade materials. FDA approved and rigorously tested for safety.',                spec: 'FDA Certified' },
-  { icon: 'package',  title: 'Sustainable',      description: 'Recyclable packaging made from 70% post-consumer materials. Good for you, better for Earth.',   spec: '70% Recycled' }
+  { icon: 'blend',    title: 'Uniform Blending', description: 'Every masala is mixed in a ribbon blender, so each spoonful tastes the same as the last.',                spec: 'Ribbon Blender' },
+  { icon: 'scale',    title: 'Weighed, Not Guessed', description: 'Each pouch is filled on a digital scale, so you get the full net weight printed on the pack.',         spec: 'Digital Weighing' },
+  { icon: 'lock',     title: 'Heat-Sealed Pouch', description: 'Matte, heat-sealed stand-up pouches keep out moisture and hold in aroma. A free scoop is packed inside.', spec: 'Band-Sealed' },
+  { icon: 'scan-line', title: 'Batch Coded',     description: 'Batch number, packing date and best-before are printed on every pouch, so every pack can be traced.',  spec: 'Traceable' }
 ];
 
 /* =====================================================================

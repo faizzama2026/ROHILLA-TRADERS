@@ -15,13 +15,13 @@
     <a href="../index.html" class="back-link">← Back to ROHILLA</a>
 
     <h1>Terms of Service</h1>
-    <p class="legal-updated">Last updated: <span data-today></span></p>
+    <p class="legal-updated">Last updated: 11 September 2026</p>
 
     <h2>1. Acceptance</h2>
     <p>By using this website or placing an order with us, you agree to these terms. If you do not agree, please do not use the site.</p>
 
     <h2>2. About us</h2>
-    <p><strong>ROHILLA Traders</strong> is a proprietorship registered in India. FSSAI License: <span data-fssai>—</span>. GSTIN: <span data-gstin>—</span>. Registered address: <span data-address>—</span>.</p>
+    <p><strong>M/S Rohilla Traders</strong> is a partnership firm registered in India<span data-fssai-row>. FSSAI License: <span data-fssai>—</span></span><span data-gstin-row>. GSTIN: <span data-gstin>—</span></span>. Registered address: <span data-address>—</span>.</p>
 
     <h2>3. Products & pricing</h2>
     <ul>
@@ -52,7 +52,7 @@
     <h2>8. Food safety</h2>
     <ul>
       <li>Our products are FSSAI-licensed packaged spices. Each pouch carries a batch number, manufacturing date and best-before date.</li>
-      <li>Best-before is typically 18–24 months from manufacture if stored in a cool dry place, sealed.</li>
+      <li>The best-before date is printed on each pouch. Store in a cool, dry place and keep the pouch sealed after use.</li>
       <li>If you have known allergies, please read the ingredients on each pouch carefully.</li>
     </ul>
 
@@ -68,7 +68,7 @@
     <h2>12. Contact</h2>
     <div class="legal-contact">
       <p>
-        ROHILLA Traders<br/>
+        M/S Rohilla Traders<br/>
         <span data-address>—</span><br/>
         Email: <span data-email>—</span><br/>
         Phone: <span data-phone>—</span>
@@ -78,12 +78,15 @@
 
   <script src="../data.js"></script>
   <script>
-    document.querySelectorAll('[data-today]').forEach(el => el.textContent = new Date().toISOString().slice(0, 10));
     document.querySelectorAll('[data-email]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactEmail) || '—');
     document.querySelectorAll('[data-phone]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactPhone) || '—');
     document.querySelectorAll('[data-address]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.contactAddress) || '—');
-    document.querySelectorAll('[data-fssai]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.fssaiLicense) || '—');
-    document.querySelectorAll('[data-gstin]').forEach(el => el.textContent = (window.CONFIG && window.CONFIG.gstin) || '—');
+    // FSSAI / GSTIN stay hidden until real numbers replace the 'XXXX' placeholders in data.js
+    [['fssai', 'fssaiLicense'], ['gstin', 'gstin']].forEach(([key, field]) => {
+      const value = window.CONFIG && window.CONFIG[field];
+      if (!value || /^X+$/i.test(value)) document.querySelectorAll('[data-' + key + '-row]').forEach(el => el.hidden = true);
+      else document.querySelectorAll('[data-' + key + ']').forEach(el => el.textContent = value);
+    });
   </script>
 </body>
 </html>

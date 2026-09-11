@@ -25,21 +25,43 @@ const Branding = {
       stats.innerHTML = html;
     }
 
+    const cfg = window.CONFIG;
+    if (!cfg) return;
+    const whatsappUrl = 'https://wa.me/' + cfg.whatsappNumber;
+
     // Footer contacts
     const fc = $('#footer-contacts');
-    if (fc && window.CONFIG) {
+    if (fc) {
       fc.innerHTML = `
-        <div><i data-lucide="map-pin"></i><span>${window.CONFIG.contactAddress}</span></div>
-        <div><i data-lucide="phone"></i><span>${window.CONFIG.contactPhone}</span></div>
-        <div><i data-lucide="mail"></i><span>${window.CONFIG.contactEmail}</span></div>
+        <div><i data-lucide="map-pin"></i><span>${cfg.contactAddress}</span></div>
+        <div><i data-lucide="phone"></i><a href="tel:${cfg.contactPhone.replace(/\s/g, '')}">${cfg.contactPhone}</a></div>
+        <div><i data-lucide="mail"></i><a href="mailto:${cfg.contactEmail}">${cfg.contactEmail}</a></div>
       `;
     }
 
-    // FSSAI + GSTIN badges in footer-india
-    const fssai = $('#footer-fssai');
-    const gstin = $('#footer-gstin');
-    if (fssai && window.CONFIG) fssai.textContent = window.CONFIG.fssaiLicense;
-    if (gstin && window.CONFIG) gstin.textContent = window.CONFIG.gstin;
+    // Links that live in several places in the footer
+    $$('[data-email-link]').forEach(a => { a.href = 'mailto:' + cfg.contactEmail; });
+    $$('[data-whatsapp-link]').forEach(a => { a.href = whatsappUrl; });
+    $$('[data-instagram-link]').forEach(a => {
+      if (cfg.instagramUrl) a.href = cfg.instagramUrl;
+      else a.closest('li') ? a.closest('li').remove() : a.remove();
+    });
+    $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
+
+    // FSSAI + GSTIN badges in footer-india — hidden until real numbers are set
+    Branding.fillOrHide('#footer-fssai', '[data-fssai-row]', cfg.fssaiLicense);
+    Branding.fillOrHide('#footer-gstin', '[data-gstin-row]', cfg.gstin);
+  },
+
+  isPlaceholder(value) {
+    return !value || /^X+$/i.test(value);
+  },
+
+  fillOrHide(valueSel, rowSel, value) {
+    const el = $(valueSel);
+    if (!el) return;
+    if (Branding.isPlaceholder(value)) $$(rowSel).forEach(r => r.setAttribute('hidden', ''));
+    else el.textContent = value;
   }
 };
 
@@ -723,7 +745,7 @@ const CartUI = {
         <div class="cart-upsell-inner">
           <i data-lucide="sparkles"></i>
           <div class="cart-upsell-body">
-            <p class="cart-upsell-title">Complete the Barbeque Kit</p>
+            <p class="cart-upsell-title">Pairs well with</p>
             <div class="cart-upsell-row">
               <img src="${u.images[0]}" alt="${u.name}" />
               <div class="info">
@@ -856,8 +878,10 @@ const Checkout = {
     document.body.style.overflow = '';
   },
 
-  // Returns totals broken down: subtotal, comboDiscount, shipping, gst, total
-  totals(state) {
+  // Returns totals broken down: subtotal, comboDiscount, shipping, gst, total.
+  // Product prices are MRP, which by law already INCLUDES GST — so `gst` is
+  // the portion of the total that is tax, shown for information only.
+  totals() {
     const cartTotals = Cart.totals();
     const subtotal = cartTotals.subtotal;
     const comboDiscount = cartTotals.discount;
@@ -865,9 +889,8 @@ const Checkout = {
 
     const cfg = window.CONFIG;
     const shipping = (afterDiscount >= cfg.freeShippingThreshold) ? 0 : cfg.shippingCost;
-    const taxable = afterDiscount + shipping;
-    const gst = Math.round(taxable * cfg.gstRate);
-    const total = taxable + gst;
+    const total = afterDiscount + shipping;
+    const gst = Math.round(total - total / (1 + cfg.gstRate));
 
     return { subtotal, comboDiscount, shipping, gst, total };
   },
@@ -925,7 +948,7 @@ const Checkout = {
       $('#co-city').value = match.city;
       $('#co-state').value = match.state;
     } else {
-      status.textContent = 'Pan-India COD available — courier will confirm within 24 hours';
+      status.textContent = 'We deliver across India — we\'ll confirm the delivery date on WhatsApp';
       status.className = 'checkout-pincode-status warn';
     }
   },
@@ -1005,8 +1028,8 @@ const Checkout = {
     lines.push('Subtotal: ' + window.formatPrice(t.subtotal));
     if (t.comboDiscount > 0) lines.push('Combo discount: -' + window.formatPrice(t.comboDiscount));
     lines.push('Shipping: ' + (t.shipping === 0 ? 'FREE' : window.formatPrice(t.shipping)));
-    lines.push('GST (' + Math.round(cfg.gstRate * 100) + '%): ' + window.formatPrice(t.gst));
     lines.push('*TOTAL: ' + window.formatPrice(t.total) + '*');
+    lines.push('(includes GST ' + Math.round(cfg.gstRate * 100) + '%: ' + window.formatPrice(t.gst) + ')');
     lines.push('');
     lines.push('*Deliver to:*');
     lines.push(c.name);
@@ -1016,7 +1039,7 @@ const Checkout = {
     lines.push((c.city ? c.city + ', ' : '') + (c.state ? c.state + ' - ' : '') + c.pincode);
     if (c.notes) { lines.push(''); lines.push('*Notes:* ' + c.notes); }
     lines.push('');
-    lines.push('Placed via rohilla.com');
+    lines.push('Placed via rohillatraders.com');
     return lines.join('\n');
   }
 };
